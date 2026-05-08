@@ -1,29 +1,32 @@
 import React, { useState } from 'react';
-import { PlaneTakeoff, Wallet, Calendar, Compass, ArrowRight, ArrowLeft, CheckCircle2 } from 'lucide-react';
+import { ArrowRight, ArrowLeft, Sparkles, MapPin, CalendarDays, Users, Wallet, CheckCircle2 } from 'lucide-react';
 
 const interestsOptions = [
-  'Adventure', 'Food', 'Nature', 'Nightlife', 'Culture', 'Shopping', 'Relaxation', 'Wildlife', 'History', 'Beach'
+  'Adventure', 'Food & Culinary', 'Nature & Outdoors', 'Nightlife', 
+  'Culture & Heritage', 'Shopping', 'Relaxation & Spa', 'Wildlife', 
+  'History', 'Beach & Sun'
 ];
 
 interface WizardProps {
-  onSubmit: (data: { destination: string; budget: number; days: number; interests: string[] }) => void;
+  onSubmit: (data: { destination: string; budget: number; days: number; travelers: number; interests: string[] }) => void;
 }
 
 export const TripFormWizard: React.FC<WizardProps> = ({ onSubmit }) => {
   const [step, setStep] = useState(1);
   const [destination, setDestination] = useState('');
-  const [budget, setBudget] = useState('');
   const [days, setDays] = useState('');
+  const [travelers, setTravelers] = useState('2');
+  const [budget, setBudget] = useState('');
   const [interests, setInterests] = useState<string[]>([]);
   const [error, setError] = useState('');
 
   const nextStep = () => {
-    if (step === 1 && (!destination.trim() || !days)) {
-      setError('Please provide destination and number of days.');
+    if (step === 1 && (!destination.trim() || !days || !travelers)) {
+      setError('Please fill in all details to continue.');
       return;
     }
     if (step === 2 && !budget) {
-      setError('Please provide a budget amount.');
+      setError('Please provide an estimated budget.');
       return;
     }
     setError('');
@@ -38,153 +41,190 @@ export const TripFormWizard: React.FC<WizardProps> = ({ onSubmit }) => {
 
   const handleFinalSubmit = () => {
     if (interests.length === 0) {
-      setError('Please select at least one interest.');
+      setError('Please select at least one vibe for your trip.');
       return;
     }
     setError('');
-    onSubmit({ destination, budget: Number(budget), days: Number(days), interests });
+    onSubmit({ destination, budget: Number(budget), days: Number(days), travelers: Number(travelers), interests });
   };
 
   return (
-    <div className="max-w-3xl mx-auto bg-white dark:bg-gray-800 rounded-3xl shadow-xl border border-gray-100 dark:border-gray-700 overflow-hidden mt-8 transition-colors">
-      <div className="bg-gray-50 dark:bg-gray-900 p-6 flex items-center justify-between border-b border-gray-100 dark:border-gray-700">
-        <h2 className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-purple-600">Plan Your Trip</h2>
-        <div className="flex items-center gap-2">
-          <div className={`w-8 h-2 rounded-full ${step >= 1 ? 'bg-blue-600' : 'bg-gray-200 dark:bg-gray-700'}`}></div>
-          <div className={`w-8 h-2 rounded-full ${step >= 2 ? 'bg-blue-600' : 'bg-gray-200 dark:bg-gray-700'}`}></div>
-          <div className={`w-8 h-2 rounded-full ${step >= 3 ? 'bg-blue-600' : 'bg-gray-200 dark:bg-gray-700'}`}></div>
+    <div className="max-w-2xl mx-auto w-full font-sans relative z-10">
+      {/* Premium Glassmorphism Card */}
+      <div className="bg-white/80 dark:bg-[#0f172a]/80 backdrop-blur-2xl rounded-[32px] shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.2)] border border-gray-100 dark:border-slate-800/60 overflow-hidden transition-all duration-500">
+        
+        {/* Progress Bar */}
+        <div className="w-full h-1.5 bg-gray-100 dark:bg-slate-800/50">
+          <div 
+            className="h-full bg-gradient-to-r from-blue-500 to-indigo-500 transition-all duration-500 ease-out"
+            style={{ width: `${(step / 3) * 100}%` }}
+          />
         </div>
-      </div>
 
-      <div className="p-8 md:p-12 min-h-[350px] relative">
-        {error && (
-          <div className="mb-6 p-4 bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 text-sm font-bold rounded-xl animate-in fade-in transition-all border border-red-200 dark:border-red-800">
-            {error}
-          </div>
-        )}
-
-        {/* STEP 1: Core Details */}
-        {step === 1 && (
-          <div className="space-y-8 animate-in slide-in-from-right-8 fade-in duration-500">
-            <h3 className="text-3xl font-extrabold flex items-center gap-3">
-              <PlaneTakeoff className="text-blue-500 w-8 h-8" /> Where to next?
-            </h3>
-            
-            <div className="space-y-4">
-              <label className="text-sm font-bold text-gray-700 dark:text-gray-200">Destination</label>
-              <input 
-                type="text" 
-                placeholder="e.g. Kyoto, Japan or Bali, Indonesia"
-                value={destination}
-                onChange={(e) => setDestination(e.target.value)}
-                autoFocus
-                className="w-full bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-2xl px-6 py-4 focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all text-lg font-medium"
-              />
+        <div className="p-8 md:p-12 min-h-[400px] flex flex-col justify-center relative">
+          
+          {error && (
+            <div className="absolute top-6 left-8 right-8 p-3 bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 text-sm font-medium rounded-2xl animate-in fade-in slide-in-from-top-2 border border-red-100 dark:border-red-500/20 text-center">
+              {error}
             </div>
+          )}
 
-            <div className="space-y-4">
-              <label className="text-sm font-bold flex items-center gap-2 text-gray-700 dark:text-gray-200">
-                <Calendar className="w-5 h-5 text-purple-500" /> Duration (Days)
-              </label>
-              <input 
-                type="number" 
-                min="1" max="60"
-                placeholder="Number of days..."
-                value={days}
-                onChange={(e) => setDays(e.target.value)}
-                className="w-full bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-2xl px-6 py-4 focus:ring-4 focus:ring-purple-500/20 focus:border-purple-500 outline-none transition-all text-lg font-medium"
-              />
-            </div>
-          </div>
-        )}
+          {/* STEP 1: Core Details */}
+          {step === 1 && (
+            <div className="space-y-8 animate-in slide-in-from-right-4 fade-in duration-500">
+              <div className="space-y-6">
+                {/* Destination */}
+                <div className="space-y-3">
+                  <label className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
+                    Where do you want to go? 🌍
+                  </label>
+                  <div className="relative group">
+                    <MapPin className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-blue-500 transition-colors" />
+                    <input 
+                      type="text" 
+                      placeholder="e.g. Goa, Japan, Bali..."
+                      value={destination}
+                      onChange={(e) => setDestination(e.target.value)}
+                      autoFocus
+                      className="w-full bg-gray-50/50 dark:bg-slate-900/50 border border-gray-200 dark:border-slate-700/50 rounded-2xl pl-14 pr-6 py-4 md:py-5 focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all text-lg font-medium text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-slate-500"
+                    />
+                  </div>
+                </div>
 
-        {/* STEP 2: Budget */}
-        {step === 2 && (
-          <div className="space-y-8 animate-in slide-in-from-right-8 fade-in duration-500">
-            <h3 className="text-3xl font-extrabold flex items-center gap-3">
-              <Wallet className="text-green-500 w-8 h-8" /> What's your budget?
-            </h3>
-            <p className="text-gray-500 dark:text-gray-400 font-medium">This helps us find the right hotels, dining, and activities for you.</p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* Days */}
+                  <div className="space-y-3">
+                    <label className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                      How many days? 📅
+                    </label>
+                    <div className="relative group">
+                      <CalendarDays className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-indigo-500 transition-colors" />
+                      <input 
+                        type="number" 
+                        min="1" max="60"
+                        placeholder="e.g. 3"
+                        value={days}
+                        onChange={(e) => setDays(e.target.value)}
+                        className="w-full bg-gray-50/50 dark:bg-slate-900/50 border border-gray-200 dark:border-slate-700/50 rounded-2xl pl-12 pr-4 py-4 focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all text-lg font-medium text-gray-900 dark:text-white placeholder:text-gray-400"
+                      />
+                    </div>
+                  </div>
 
-            <div className="space-y-4 pt-4">
-              <label className="text-sm font-bold text-gray-700 dark:text-gray-200">Total Budget ($)</label>
-              <div className="relative">
-                <span className="absolute left-6 top-1/2 -translate-y-1/2 text-gray-500 font-bold text-lg">$</span>
-                <input 
-                  type="number" 
-                  min="1"
-                  placeholder="5000"
-                  value={budget}
-                  onChange={(e) => setBudget(e.target.value)}
-                  autoFocus
-                  className="w-full bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-2xl pl-12 pr-6 py-4 focus:ring-4 focus:ring-green-500/20 focus:border-green-500 outline-none transition-all text-xl font-black text-green-700 dark:text-green-500"
-                />
+                  {/* Travelers */}
+                  <div className="space-y-3">
+                    <label className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                      Who’s traveling? 👨‍👩‍👧‍👦
+                    </label>
+                    <div className="relative group">
+                      <Users className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-indigo-500 transition-colors" />
+                      <input 
+                        type="number" 
+                        min="1" max="20"
+                        placeholder="e.g. 2"
+                        value={travelers}
+                        onChange={(e) => setTravelers(e.target.value)}
+                        className="w-full bg-gray-50/50 dark:bg-slate-900/50 border border-gray-200 dark:border-slate-700/50 rounded-2xl pl-12 pr-4 py-4 focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all text-lg font-medium text-gray-900 dark:text-white placeholder:text-gray-400"
+                      />
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
-        )}
+          )}
 
-        {/* STEP 3: Interests */}
-        {step === 3 && (
-          <div className="space-y-8 animate-in slide-in-from-right-8 fade-in duration-500">
-            <h3 className="text-3xl font-extrabold flex items-center gap-3">
-              <Compass className="text-orange-500 w-8 h-8" /> Select your vibe
-            </h3>
-            <p className="text-gray-500 dark:text-gray-400 font-medium">Pick multiple tags so our AI can curate the perfect experience.</p>
+          {/* STEP 2: Budget */}
+          {step === 2 && (
+            <div className="space-y-8 animate-in slide-in-from-right-4 fade-in duration-500">
+              <div className="text-center space-y-2">
+                <h3 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">
+                  What's your budget? 💰
+                </h3>
+                <p className="text-gray-500 dark:text-slate-400 text-sm md:text-base">
+                  Help us tailor the perfect accommodations and experiences.
+                </p>
+              </div>
 
-            <div className="flex flex-wrap gap-3 pt-2">
-              {interestsOptions.map(interest => (
-                <button
-                  key={interest}
-                  type="button"
-                  onClick={() => toggleInterest(interest)}
-                  className={`px-5 py-3 rounded-xl text-md font-bold transition-all duration-300 border-2 ${
-                    interests.includes(interest)
-                      ? 'bg-orange-50 dark:bg-orange-900/30 border-orange-500 text-orange-600 dark:text-orange-400 scale-[1.02] shadow-sm'
-                      : 'bg-transparent border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:border-orange-300'
-                  }`}
-                >
-                  {interests.includes(interest) && <CheckCircle2 className="inline w-4 h-4 mr-2 mb-0.5" />}
-                  {interest}
-                </button>
-              ))}
+              <div className="max-w-md mx-auto pt-4">
+                <div className="relative group">
+                  <span className="absolute left-6 top-1/2 -translate-y-1/2 text-gray-400 dark:text-slate-500 font-medium text-2xl group-focus-within:text-emerald-500 transition-colors">
+                    ₹
+                  </span>
+                  <input 
+                    type="number" 
+                    min="1000"
+                    placeholder="20000"
+                    value={budget}
+                    onChange={(e) => setBudget(e.target.value)}
+                    autoFocus
+                    className="w-full bg-gray-50/50 dark:bg-slate-900/50 border border-gray-200 dark:border-slate-700/50 rounded-3xl pl-14 pr-6 py-6 focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 outline-none transition-all text-3xl md:text-4xl font-bold text-gray-900 dark:text-white placeholder:text-gray-300 dark:placeholder:text-slate-700 text-center"
+                  />
+                </div>
+              </div>
             </div>
-          </div>
-        )}
-      </div>
+          )}
 
-      <div className="bg-gray-50 dark:bg-gray-900 p-6 flex items-center justify-between border-t border-gray-100 dark:border-gray-700">
-        {step > 1 ? (
+          {/* STEP 3: Interests */}
+          {step === 3 && (
+            <div className="space-y-8 animate-in slide-in-from-right-4 fade-in duration-500">
+              <div className="text-center space-y-2">
+                <h3 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">
+                  What's your vibe? ✨
+                </h3>
+                <p className="text-gray-500 dark:text-slate-400 text-sm md:text-base">
+                  Select a few interests to personalize your itinerary.
+                </p>
+              </div>
+
+              <div className="flex flex-wrap justify-center gap-3 pt-4">
+                {interestsOptions.map(interest => (
+                  <button
+                    key={interest}
+                    type="button"
+                    onClick={() => toggleInterest(interest)}
+                    className={`px-5 py-3 rounded-2xl text-sm md:text-base font-medium transition-all duration-300 border ${
+                      interests.includes(interest)
+                        ? 'bg-indigo-500/10 dark:bg-indigo-500/20 border-indigo-500 text-indigo-700 dark:text-indigo-300 shadow-sm'
+                        : 'bg-white dark:bg-slate-800/50 border-gray-200 dark:border-slate-700/50 text-gray-600 dark:text-slate-300 hover:border-gray-300 dark:hover:border-slate-600 hover:bg-gray-50 dark:hover:bg-slate-800'
+                    }`}
+                  >
+                    {interests.includes(interest) && <CheckCircle2 className="inline w-4 h-4 mr-1.5 mb-0.5" />}
+                    {interest}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Navigation Footer */}
+        <div className="px-8 py-6 bg-gray-50/50 dark:bg-slate-900/30 border-t border-gray-100 dark:border-slate-800/60 flex items-center justify-between">
           <button 
             type="button" 
-            onClick={() => { setStep(s => s - 1); setError(''); }}
-            className="px-6 py-3 rounded-xl font-bold text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-800 transition-colors flex items-center gap-2"
+            onClick={() => { setStep(s => Math.max(1, s - 1)); setError(''); }}
+            className={`px-6 py-3 rounded-2xl font-semibold text-gray-500 dark:text-slate-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-slate-800 transition-all flex items-center gap-2 ${step === 1 ? 'invisible' : ''}`}
           >
             <ArrowLeft className="w-5 h-5" /> Back
           </button>
-        ) : <div />}
-        
-        {step < 3 ? (
-          <button 
-            type="button" 
-            onClick={nextStep}
-            className="px-8 py-3 rounded-xl font-extrabold text-white bg-blue-600 hover:bg-blue-700 transition-colors shadow-lg shadow-blue-500/20 flex items-center gap-2 active:scale-95"
-          >
-            Next Step <ArrowRight className="w-5 h-5" />
-          </button>
-        ) : (
-          <button 
-            type="button" 
-            onClick={handleFinalSubmit}
-            className="px-8 py-3 rounded-xl font-extrabold text-white bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 transition-all shadow-xl shadow-purple-500/30 flex items-center gap-2 active:scale-95 animate-pulse-once"
-          >
-            Generate My Plan <Sparkles className="w-5 h-5" />
-          </button>
-        )}
+          
+          {step < 3 ? (
+            <button 
+              type="button" 
+              onClick={nextStep}
+              className="px-8 py-3.5 rounded-2xl font-bold text-white bg-gray-900 dark:bg-white dark:text-gray-900 hover:bg-gray-800 dark:hover:bg-gray-100 transition-all shadow-[0_4px_14px_0_rgba(0,0,0,0.1)] hover:shadow-[0_6px_20px_rgba(0,0,0,0.15)] flex items-center gap-2 active:scale-95"
+            >
+              Continue <ArrowRight className="w-5 h-5" />
+            </button>
+          ) : (
+            <button 
+              type="button" 
+              onClick={handleFinalSubmit}
+              className="px-8 py-3.5 rounded-2xl font-bold text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 transition-all shadow-[0_4px_14px_0_rgba(79,70,229,0.39)] hover:shadow-[0_6px_20px_rgba(79,70,229,0.23)] flex items-center gap-2 active:scale-95 group"
+            >
+              Plan My Trip ✈️
+            </button>
+          )}
+        </div>
       </div>
     </div>
   );
 };
-
-// Requires Sparkles import below
-import { Sparkles } from 'lucide-react';

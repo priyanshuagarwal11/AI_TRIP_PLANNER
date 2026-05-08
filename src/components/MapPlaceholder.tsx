@@ -1,4 +1,3 @@
-import React from 'react';
 import { Map as MapIcon } from 'lucide-react';
 
 export const MapPlaceholder = () => (

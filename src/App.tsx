@@ -1,21 +1,26 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
+import { AuthProvider } from './context/AuthContext';
+import { AuthModal } from './components/AuthModal';
 import { Navbar } from './components/Navbar';
 import { LandingPage } from './components/LandingPage';
-import { TripFormWizard } from './components/TripFormWizard';
 import { TripResults } from './components/TripResults';
 import { SavedTrips } from './components/SavedTrips';
 import { Footer } from './components/Footer';
 import { LoadingAnimation } from './components/LoadingAnimation';
-import { MapPlaceholder } from './components/MapPlaceholder';
+import { TripMap } from './components/TripMap';
+import { GroupTrips } from './components/group/GroupTrips';
+import { AITripPlanner } from './components/ai-chat/AITripPlanner';
 import type { TripData } from './types';
+import { getDestinationData } from './data/destinations';
 
-type ViewState = 'home' | 'plan' | 'loading' | 'results' | 'saved';
+type ViewState = 'home' | 'plan' | 'loading' | 'results' | 'saved' | 'groups' | 'ai-planner';
 
 function App() {
   const [activeView, setActiveView] = useState<ViewState>('home');
   const [currentTrip, setCurrentTrip] = useState<TripData | null>(null);
   const [savedTrips, setSavedTrips] = useState<TripData[]>([]);
   const [darkMode, setDarkMode] = useState(false);
+  const [showAuthModal, setShowAuthModal] = useState(false);
 
   useEffect(() => {
     // Check saved trips
@@ -67,23 +72,11 @@ function App() {
   };
 
   const generateMockTrip = (formData: any): TripData => {
+    const destData = getDestinationData(formData.destination, formData.days);
     const total = Math.round(formData.budget * (0.8 + Math.random() * 0.15));
     const hotel = Math.round(total * 0.4);
     const travel = Math.round(total * 0.3);
     const food = total - hotel - travel;
-
-    const imgMap = [
-      'https://images.unsplash.com/photo-1522814382583-0aa718acdf3b?w=600',
-      'https://images.unsplash.com/photo-1499856871958-5b9627545d1a?w=600',
-      'https://images.unsplash.com/photo-1501504905252-473c47e087f8?w=600',
-      'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=600'
-    ];
-
-    const hotelImgs = [
-      'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=600',
-      'https://images.unsplash.com/photo-1551882547-ff40c0d13c11?w=600',
-      'https://images.unsplash.com/photo-1582719508461-905c673771fd?w=600'
-    ];
 
     return {
       id: Date.now().toString(),
@@ -91,29 +84,44 @@ function App() {
       days: formData.days,
       budget: formData.budget,
       dateSaved: new Date().toLocaleDateString(),
-      itinerary: Array.from({ length: formData.days }).map((_, i) => ({
+      itinerary: destData.days.map((dayData, i) => ({
         day: i + 1,
-        places: [
-          { name: `Morning Cafe & City Walk`, description: `Perfect start around the iconic streets of ${formData.destination}.`, image: imgMap[(i + 0) % imgMap.length] },
-          { name: `Historic Monument Tour`, description: `Dive into the deep culture and snap amazing photos.`},
-          { name: `Sunset Viewpoint`, description: `Enjoy breathtaking sunset vistas as evening approaches.`},
-          { name: `Night Market & Dinner`, description: `Explore vibrant local life and traditional cuisine.`}
-        ]
+        title: dayData.title,
+        subtitle: dayData.subtitle,
+        places: dayData.places.map(p => ({
+          name: p.name,
+          description: p.description,
+          image: p.image,
+          time: p.time,
+          period: p.period,
+          lat: p.lat,
+          lng: p.lng,
+        })),
       })),
-      cost: { total, hotel, travel, food }, 
-      hotels: [
-        { name: 'Grand Skyline Hotel', price: Math.round(hotel * 0.7), rating: 4.9, image: hotelImgs[0] },
-        { name: 'Cozy Boutique Resort', price: Math.round(hotel * 0.5), rating: 4.6, image: hotelImgs[1] },
-        { name: 'City Center Inn', price: Math.round(hotel * 0.3), rating: 4.2, image: hotelImgs[2] }
-      ],
-      activities: formData.interests.length > 0 ? formData.interests.map((interest: string) => ({
-        type: interest,
-        name: `${interest} Masterclass & Experience`,
-        description: `Premium ${interest.toLowerCase()}-focused activity specially curated for travelers in ${formData.destination}.`
-      })) : [
-        { type: 'Tour', name: 'City Highlight Guided Tour', description: 'Cover all major landmarks with an expert local guide.' },
-        { type: 'Food', name: 'Local Cuisine Tasting', description: 'Sample the most popular street food and local delicacies.' }
-      ]
+      cost: { total, hotel, travel, food },
+      hotels: destData.hotels.map(h => ({
+        name: h.name,
+        price: Math.round(h.pricePerNight * formData.days),
+        rating: h.rating,
+        image: h.image,
+      })),
+      activities: formData.interests.length > 0
+        ? formData.interests.map((interest: string, idx: number) => {
+            const dayPlaces = destData.days[idx % destData.days.length]?.places || [];
+            const relatedPlace = dayPlaces[0];
+            return {
+              type: interest,
+              name: relatedPlace ? `${interest}: ${relatedPlace.name}` : `${interest} Masterclass`,
+              description: relatedPlace
+                ? `${interest}-focused experience at ${relatedPlace.name}. ${relatedPlace.description}`
+                : `Premium ${interest.toLowerCase()} activity curated for ${formData.destination}.`,
+            };
+          })
+        : destData.days.slice(0, 4).flatMap(d => d.places.slice(0, 1).map(p => ({
+            type: 'Sightseeing',
+            name: p.name,
+            description: p.description,
+          }))),
     };
   };
 
@@ -134,20 +142,25 @@ function App() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50/50 dark:bg-gray-950 text-gray-900 dark:text-gray-100 font-sans transition-colors duration-300 flex flex-col selection:bg-blue-500/30">
-      
-      {activeView !== 'home' && (
-        <Navbar 
-          darkMode={darkMode} 
-          toggleDarkMode={toggleDarkMode} 
-          activeView={activeView === 'loading' ? 'plan' : activeView} 
-          setView={setActiveView} 
-        />
-      )}
+    <AuthProvider>
+      <div className="min-h-screen bg-gray-50/50 dark:bg-gray-950 text-gray-900 dark:text-gray-100 font-sans transition-colors duration-300 flex flex-col selection:bg-blue-500/30">
+        
+        {/* Render auth modal globally when opened */}
+        <AuthModal isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} />
+
+        {activeView !== 'ai-planner' && (
+          <Navbar 
+            darkMode={darkMode} 
+            toggleDarkMode={toggleDarkMode} 
+            activeView={activeView === 'loading' ? 'plan' : activeView} 
+            setView={setActiveView} 
+            onOpenAuth={() => setShowAuthModal(true)}
+          />
+        )}
       
       <main className="flex-grow flex flex-col">
         {(activeView === 'home' || activeView === 'plan') && (
-          <LandingPage onSubmit={handleGenerateTrip} />
+          <LandingPage onSubmit={handleGenerateTrip} onOpenAuth={() => setShowAuthModal(true)} onAIChat={() => setActiveView('ai-planner')} />
         )}
 
         {activeView === 'loading' && (
@@ -160,7 +173,7 @@ function App() {
           <div className="container mx-auto px-4 py-8 lg:py-12 flex-grow">
             <div className="max-w-7xl mx-auto">
               <TripResults tripData={currentTrip} onSave={handleSaveTrip} />
-              <MapPlaceholder />
+              <TripMap tripData={currentTrip} />
               <div className="mt-16 text-center">
                 <button 
                   onClick={() => { setActiveView('plan'); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
@@ -178,10 +191,21 @@ function App() {
             <SavedTrips trips={savedTrips} onView={viewSavedTrip} onDelete={handleDeleteTrip} />
           </div>
         )}
+
+        {activeView === 'groups' && (
+          <div className="flex-grow">
+            <GroupTrips onOpenAuth={() => setShowAuthModal(true)} />
+          </div>
+        )}
+
+        {activeView === 'ai-planner' && (
+          <AITripPlanner onBack={() => setActiveView('home')} />
+        )}
       </main>
 
-      <Footer />
+      {activeView !== 'ai-planner' && <Footer />}
     </div>
+    </AuthProvider>
   );
 }
 

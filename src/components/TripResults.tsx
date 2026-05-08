@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { 
   MapPin, Download, Share2, Bookmark, Calendar, 
   BedDouble, Activity, CheckCircle2, Star,
@@ -89,30 +89,50 @@ export const TripResults = ({ tripData, onSave }: { tripData: TripData, onSave: 
                   </div>
                   <div className="h-48 bg-gray-200 dark:bg-gray-700 overflow-hidden relative">
                     {dayPlan.places[0]?.image ? (
-                      <img src={dayPlan.places[0].image} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" alt="Day highlight" />
+                      <img src={dayPlan.places[0].image} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" alt={dayPlan.title || 'Day highlight'} />
                     ) : (
                       <div className="w-full h-full bg-gradient-to-br from-indigo-400 to-purple-500"></div>
                     )}
                     <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-gray-900 to-transparent pt-12 p-6">
-                      <h4 className="text-xl font-bold text-white shadow-sm">
-                        Day {dayPlan.day} Overview
+                      <h4 className="text-xl font-bold text-white">
+                        {dayPlan.title || `Day ${dayPlan.day} Overview`}
                       </h4>
+                      {dayPlan.subtitle && (
+                        <p className="text-sm text-gray-300 mt-1">{dayPlan.subtitle}</p>
+                      )}
                     </div>
                   </div>
                   
-                  <div className="p-6 flex-grow flex flex-col justify-center space-y-6">
-                    {dayPlan.places.map((place, i) => (
-                      <div key={i} className="flex gap-4 group/item">
-                        <div className="flex flex-col items-center">
-                          <CheckCircle2 className="w-6 h-6 text-green-500 shrink-0 bg-white dark:bg-gray-800 rounded-full" />
-                          {i !== dayPlan.places.length - 1 && <div className="w-0.5 h-full bg-gray-200 dark:bg-gray-700 mt-2 rounded-full"></div>}
+                  <div className="p-6 flex-grow flex flex-col justify-center space-y-5">
+                    {dayPlan.places.map((place, i) => {
+                      const periodColors: Record<string, string> = {
+                        morning: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
+                        afternoon: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
+                        evening: 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400',
+                      };
+                      return (
+                        <div key={i} className="flex gap-4 group/item">
+                          <div className="flex flex-col items-center">
+                            <CheckCircle2 className="w-6 h-6 text-green-500 shrink-0 bg-white dark:bg-gray-800 rounded-full" />
+                            {i !== dayPlan.places.length - 1 && <div className="w-0.5 h-full bg-gray-200 dark:bg-gray-700 mt-2 rounded-full"></div>}
+                          </div>
+                          <div className="pb-4 flex-1">
+                            <div className="flex items-center gap-2 mb-1 flex-wrap">
+                              {place.time && (
+                                <span className="text-xs font-bold text-gray-400 dark:text-gray-500">{place.time}</span>
+                              )}
+                              {place.period && (
+                                <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ${periodColors[place.period] || ''}`}>
+                                  {place.period}
+                                </span>
+                              )}
+                            </div>
+                            <h5 className="font-bold text-gray-900 dark:text-white mb-1 group-hover/item:text-blue-500 transition-colors text-lg">{place.name}</h5>
+                            <p className="text-sm font-medium text-gray-500 dark:text-gray-400 leading-relaxed">{place.description}</p>
+                          </div>
                         </div>
-                        <div className="pb-4">
-                          <h5 className="font-bold text-gray-900 dark:text-white mb-1 group-hover/item:text-blue-500 transition-colors text-lg">{place.name}</h5>
-                          <p className="text-sm font-medium text-gray-500 dark:text-gray-400 leading-relaxed">{place.description}</p>
-                        </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 </div>
               ))}

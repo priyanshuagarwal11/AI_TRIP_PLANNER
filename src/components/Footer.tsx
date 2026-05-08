@@ -1,4 +1,3 @@
-import React from 'react';
 import { Map as MapIcon, Mail, Github, Twitter } from 'lucide-react';
 
 export const Footer = () => (

@@ -1,4 +1,3 @@
-import React from 'react';
 import { Sparkles, ArrowRight } from 'lucide-react';
 
 export const Hero = ({ onStartPlanning }: { onStartPlanning: () => void }) => {

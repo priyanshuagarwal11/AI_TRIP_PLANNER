@@ -2,10 +2,16 @@ export interface Place {
   name: string;
   description: string;
   image?: string;
+  lat: number;
+  lng: number;
+  time?: string;
+  period?: 'morning' | 'afternoon' | 'evening';
 }
 
 export interface DayPlan {
   day: number;
+  title?: string;
+  subtitle?: string;
   places: Place[];
 }
 

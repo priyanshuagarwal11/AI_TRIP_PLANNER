@@ -1,4 +1,3 @@
-import React from 'react';
 import { PlaneTakeoff } from 'lucide-react';
 
 export const LoadingAnimation = () => (
