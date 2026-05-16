@@ -1,40 +1,65 @@
-import { Map as MapIcon, Mail, Github, Twitter } from 'lucide-react';
+import { Map as MapIcon, Mail, Github, Twitter, Heart } from 'lucide-react';
+
+const FOOTER_LINKS = {
+  Product: ['Trip Planner', 'AI Chat', 'Group Trips', 'Saved Trips'],
+  Company: ['About Us', 'Blog', 'Careers', 'Press'],
+  Legal: ['Privacy Policy', 'Terms of Service', 'Cookie Policy'],
+};
 
 export const Footer = () => (
-  <footer className="bg-white dark:bg-gray-950 border-t border-gray-200 dark:border-gray-800 transition-colors py-12 mt-auto">
-    <div className="container mx-auto px-4 grid grid-cols-1 md:grid-cols-4 gap-8">
-      <div className="md:col-span-2 space-y-4">
-        <div className="flex items-center gap-2 opacity-80">
-          <MapIcon className="w-6 h-6 text-purple-600" />
-          <span className="font-extrabold text-xl text-gray-900 dark:text-white">TripGenie AI</span>
+  <footer className="border-t border-gray-100 dark:border-gray-800/60 bg-white dark:bg-slate-950 mt-auto">
+    <div className="section py-16">
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-10">
+        {/* Brand */}
+        <div className="col-span-2">
+          <div className="flex items-center gap-2.5 mb-4">
+            <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center">
+              <MapIcon className="w-4 h-4 text-white" />
+            </div>
+            <span className="text-lg font-extrabold tracking-tight text-gray-900 dark:text-white">
+              Trip<span className="text-blue-600 dark:text-blue-400">Genie</span>
+            </span>
+          </div>
+          <p className="text-sm text-gray-500 dark:text-gray-400 max-w-xs leading-relaxed mb-6">
+            AI-powered travel planner that creates personalized itineraries and optimizes your budget in seconds.
+          </p>
+          <div className="flex items-center gap-2">
+            {[Twitter, Github, Mail].map((Icon, i) => (
+              <a key={i} href="#" className="w-9 h-9 rounded-lg bg-gray-100 dark:bg-gray-800 hover:bg-blue-50 dark:hover:bg-blue-950/40 flex items-center justify-center text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+                <Icon className="w-4 h-4" />
+              </a>
+            ))}
+          </div>
         </div>
-        <p className="text-gray-500 dark:text-gray-400 max-w-sm leading-relaxed font-medium">
-          The ultimate AI companion for seamless, intelligent, and rapid travel planning. Explore the world without the stress of manual research.
-        </p>
-      </div>
-      
-      <div className="space-y-4">
-        <h4 className="font-bold text-gray-900 dark:text-white">Quick Links</h4>
-        <ul className="space-y-2 font-medium text-gray-500 dark:text-gray-400">
-          <li><a href="#" className="hover:text-blue-500 transition-colors">About Us</a></li>
-          <li><a href="#" className="hover:text-blue-500 transition-colors">Destinations</a></li>
-          <li><a href="#" className="hover:text-blue-500 transition-colors">Careers</a></li>
-          <li><a href="#" className="hover:text-blue-500 transition-colors">Privacy Policy</a></li>
-        </ul>
-      </div>
 
-      <div className="space-y-4">
-        <h4 className="font-bold text-gray-900 dark:text-white">Connect</h4>
-        <div className="flex items-center gap-4 text-gray-500 dark:text-gray-400">
-          <a href="#" className="p-2 bg-gray-100 dark:bg-gray-900 rounded-full hover:text-blue-500 hover:bg-blue-50 transition-colors"><Twitter className="w-5 h-5" /></a>
-          <a href="#" className="p-2 bg-gray-100 dark:bg-gray-900 rounded-full hover:text-blue-500 hover:bg-blue-50 transition-colors"><Github className="w-5 h-5" /></a>
-          <a href="#" className="p-2 bg-gray-100 dark:bg-gray-900 rounded-full hover:text-blue-500 hover:bg-blue-50 transition-colors"><Mail className="w-5 h-5" /></a>
-        </div>
+        {/* Link columns */}
+        {Object.entries(FOOTER_LINKS).map(([title, links]) => (
+          <div key={title}>
+            <h4 className="text-sm font-semibold text-gray-900 dark:text-white mb-4">{title}</h4>
+            <ul className="space-y-2.5">
+              {links.map(link => (
+                <li key={link}>
+                  <a href="#" className="text-sm text-gray-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+                    {link}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
       </div>
     </div>
-    
-    <div className="mt-12 pt-8 border-t border-gray-200 dark:border-gray-800 text-center text-sm font-semibold text-gray-400">
-      © {new Date().getFullYear()} TripGenie AI. Created with 💙 for travelers anywhere.
+
+    {/* Bottom bar */}
+    <div className="border-t border-gray-100 dark:border-gray-800/60">
+      <div className="section py-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <p className="text-xs text-gray-400 dark:text-gray-500">
+          © {new Date().getFullYear()} TripGenie. All rights reserved.
+        </p>
+        <p className="text-xs text-gray-400 dark:text-gray-500 flex items-center gap-1">
+          Made with <Heart className="w-3 h-3 text-red-400 fill-current" /> for travelers everywhere
+        </p>
+      </div>
     </div>
   </footer>
 );

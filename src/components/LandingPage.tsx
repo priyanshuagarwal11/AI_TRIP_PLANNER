@@ -1,322 +1,356 @@
-import React, { useState } from 'react';
-import { ArrowRight, Map, Bot, Edit3, Globe, Sparkles, User, LogOut, Send } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { ArrowRight, Bot, MapPin, Star, ChevronDown, Sparkles, Globe, Shield, Zap, Clock, Users, TrendingUp } from 'lucide-react';
 import { TripFormWizard } from './TripFormWizard';
 import { useAuth } from '../context/AuthContext';
 
+// ─── Data ───
+const DESTINATIONS = [
+  { name: 'Tokyo', country: 'Japan', image: 'https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?w=500&h=350&fit=crop', rating: 4.9, tag: 'Trending' },
+  { name: 'Paris', country: 'France', image: 'https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=500&h=350&fit=crop', rating: 4.8, tag: 'Popular' },
+  { name: 'Bali', country: 'Indonesia', image: 'https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=500&h=350&fit=crop', rating: 4.7, tag: 'Beach' },
+  { name: 'Dubai', country: 'UAE', image: 'https://images.unsplash.com/photo-1512453979798-5ea266f8880c?w=500&h=350&fit=crop', rating: 4.8, tag: 'Luxury' },
+  { name: 'New York', country: 'USA', image: 'https://images.unsplash.com/photo-1496442226666-8d4d0e62e6e9?w=500&h=350&fit=crop', rating: 4.7, tag: 'City' },
+  { name: 'Jaipur', country: 'India', image: 'https://images.unsplash.com/photo-1599661046289-e31897846e41?w=500&h=350&fit=crop', rating: 4.6, tag: 'Heritage' },
+];
+
+const TESTIMONIALS = [
+  { name: 'Ananya S.', role: 'Solo Traveler', text: 'TripGenie planned my entire Japan trip in 30 seconds. The itinerary was better than what I spent 3 days researching manually.', avatar: 'A', rating: 5 },
+  { name: 'Raj Mehta', role: 'Family Vacationer', text: 'We used TripGenie for our Bali family trip. Budget breakdown was spot-on and the hotel suggestions were perfect.', avatar: 'R', rating: 5 },
+  { name: 'Sarah K.', role: 'Digital Nomad', text: 'I\'ve tried every trip planner out there. TripGenie is the first one that actually feels intelligent and saves real time.', avatar: 'S', rating: 5 },
+];
+
+const FAQS = [
+  { q: 'How does TripGenie create itineraries?', a: 'TripGenie uses AI to analyze thousands of travel data points — attractions, reviews, routes, pricing, and seasonal trends — to build optimized day-by-day plans tailored to your preferences and budget.' },
+  { q: 'Is TripGenie free to use?', a: 'Yes! You can plan unlimited trips for free. Premium features like group planning and PDF export are available to logged-in users.' },
+  { q: 'Can I modify the generated itinerary?', a: 'Absolutely. You can chat with our AI agent to swap activities, change timings, add hidden gems, or adjust your budget — all in natural language.' },
+  { q: 'Which destinations are supported?', a: 'TripGenie supports destinations worldwide. We have curated data for popular destinations and use AI to generate smart plans for any location on earth.' },
+  { q: 'Can I plan group trips?', a: 'Yes! Our group planning feature lets you create shared itineraries, split expenses, vote on activities, and chat with your travel companions in real-time.' },
+];
+
+// ─── Animated Counter ───
+const Counter = ({ end, suffix = '', duration = 2000 }: { end: number; suffix?: string; duration?: number }) => {
+  const [count, setCount] = useState(0);
+  const ref = useRef<HTMLDivElement>(null);
+  const started = useRef(false);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting && !started.current) {
+        started.current = true;
+        const step = end / (duration / 16);
+        let current = 0;
+        const timer = setInterval(() => {
+          current += step;
+          if (current >= end) { setCount(end); clearInterval(timer); }
+          else setCount(Math.floor(current));
+        }, 16);
+      }
+    }, { threshold: 0.5 });
+    if (ref.current) observer.observe(ref.current);
+    return () => observer.disconnect();
+  }, [end, duration]);
+
+  return <span ref={ref}>{count.toLocaleString()}{suffix}</span>;
+};
+
+// ─── FAQ Item ───
+const FAQItem = ({ q, a }: { q: string; a: string }) => {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="border-b border-gray-100 dark:border-gray-800 last:border-0">
+      <button onClick={() => setOpen(!open)} className="w-full flex items-center justify-between py-5 text-left group">
+        <span className="font-semibold text-gray-900 dark:text-white pr-4 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">{q}</span>
+        <ChevronDown className={`w-5 h-5 text-gray-400 shrink-0 transition-transform duration-200 ${open ? 'rotate-180' : ''}`} />
+      </button>
+      <div className={`overflow-hidden transition-all duration-300 ${open ? 'max-h-40 pb-5' : 'max-h-0'}`}>
+        <p className="text-gray-500 dark:text-gray-400 text-[15px] leading-relaxed">{a}</p>
+      </div>
+    </div>
+  );
+};
+
+// ─── Main Component ───
 export const LandingPage = ({ onSubmit, onOpenAuth, onAIChat }: { onSubmit: (data: any) => void, onOpenAuth: () => void, onAIChat?: () => void }) => {
-  const { currentUser, logout } = useAuth();
-  const [activeCapability, setActiveCapability] = useState(2);
+  const { currentUser } = useAuth();
 
   return (
-    <div className="bg-gray-50 dark:bg-[#0B1120] min-h-screen text-gray-400 dark:text-slate-600 dark:text-slate-300 font-sans overflow-hidden">
-      
+    <div className="bg-white dark:bg-slate-950 min-h-screen">
 
-
-      {/* 1. Hero Section */}
-      <section className="relative pt-40 pb-16 lg:pt-56 lg:pb-24 px-4 container mx-auto text-center flex flex-col items-center">
-        {/* Glow effect */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-blue-500/10 rounded-full blur-[120px] pointer-events-none"></div>
-        <div className="absolute top-1/4 left-1/4 w-[300px] h-[300px] bg-yellow-500/10 rounded-full blur-[100px] pointer-events-none"></div>
-
-        <div className="border border-gray-200 dark:border-slate-700/50 bg-white dark:bg-slate-800/30 backdrop-blur-md px-4 py-1.5 rounded-md mb-8 inline-flex items-center gap-2">
-          <span className="w-2 h-2 rounded-full bg-blue-500"></span>
-          <span className="text-xs font-mono tracking-widest text-gray-400 dark:text-slate-600 dark:text-slate-300 uppercase">AI-POWERED TRIP PLANNER</span>
+      {/* ━━━ HERO ━━━ */}
+      <section className="relative overflow-hidden">
+        {/* Background */}
+        <div className="absolute inset-0 -z-10">
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[600px] bg-blue-500/8 dark:bg-blue-500/5 rounded-full blur-[120px]" />
+          <div className="absolute top-40 right-0 w-[400px] h-[400px] bg-indigo-500/6 dark:bg-indigo-500/4 rounded-full blur-[100px]" />
+          {/* Grid pattern */}
+          <div className="absolute inset-0 bg-[linear-gradient(rgba(0,0,0,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(0,0,0,0.02)_1px,transparent_1px)] dark:bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:60px_60px]" />
         </div>
 
-        <h1 className="text-6xl md:text-7xl lg:text-8xl font-bold text-gray-900 dark:text-white leading-[1.1] max-w-5xl font-serif">
-          Your <span className="inline-block italic bg-gradient-to-r from-yellow-400 to-orange-500 bg-clip-text text-transparent">intelligent</span> <br />
-          travel companion
-        </h1>
-
-        <p className="mt-8 text-lg md:text-xl text-gray-500 dark:text-slate-500 dark:text-slate-400 max-w-2xl text-center leading-relaxed">
-          WanderMind uses AI to craft hyper-personalized trip itineraries — from weekend getaways to month-long adventures — in seconds.
-        </p>
-
-        <div className="mt-12 flex flex-col sm:flex-row gap-4 sm:gap-6 justify-center w-full relative z-10">
-          <button 
-            onClick={() => document.getElementById('plan')?.scrollIntoView({ behavior: 'smooth' })}
-            className="px-8 py-4 bg-gradient-to-r from-yellow-400 to-orange-400 hover:from-yellow-300 hover:to-orange-300 text-slate-900 font-mono font-bold text-sm tracking-wider flex items-center justify-center gap-2 transition-transform hover:-translate-y-1"
-          >
-            + Build Your Itinerary
-          </button>
-          {onAIChat && (
-            <button 
-              onClick={onAIChat}
-              className="px-8 py-4 border border-slate-600 hover:border-yellow-500 text-gray-400 dark:text-slate-600 dark:text-slate-300 hover:text-yellow-500 font-mono font-bold text-sm tracking-wider flex items-center justify-center gap-2 transition-all hover:-translate-y-1"
-            >
-              <Bot className="w-4 h-4" />
-              Chat with AI Agent
-            </button>
-          )}
-        </div>
-      </section>
-
-      {/* THE TRIP FORM DIRECTLY ON THE HOMEPAGE */}
-      <section id="plan" className="relative z-20 px-4 mb-32 max-w-4xl mx-auto scroll-m-24">
-        <div className="dark">
-            <TripFormWizard onSubmit={onSubmit} />
-        </div>
-      </section>
-
-      {/* 2. Process Section */}
-      <section id="how-it-works" className="py-24 px-4 lg:px-12 xl:px-24 mx-auto max-w-[1400px]">
-        <div className="flex items-center gap-4 mb-8">
-          <div className="w-8 h-[1px] bg-blue-600"></div>
-          <span className="text-xs font-mono tracking-widest text-blue-500">PROCESS</span>
-        </div>
-        
-        <h2 className="text-4xl md:text-5xl font-serif text-gray-900 dark:text-white mb-20 tracking-tight">
-          How <span className="italic text-yellow-500">WanderMind</span> works
-        </h2>
-
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 border border-gray-200 dark:border-slate-800 rounded-sm overflow-hidden bg-slate-900/40">
-          <div className="p-8 md:p-10 border-b lg:border-b-0 lg:border-r border-gray-200 dark:border-slate-800 hover:bg-slate-800/40 transition-colors">
-            <div className="text-6xl font-black text-[#1e293b] mb-8 font-serif leading-none tracking-tight">01</div>
-            <Map className="w-6 h-6 text-gray-400 dark:text-slate-600 dark:text-slate-300 mb-6" />
-            <h3 className="text-xl font-serif text-gray-900 dark:text-white mb-4 font-bold tracking-wide">Tell us your vision</h3>
-            <p className="text-[#94a3b8] leading-relaxed text-[15px]">
-              Enter destination, travel dates, budget, and preferences. Our AI understands natural language — just talk to it.
-            </p>
-          </div>
-          <div className="p-8 md:p-10 border-b md:border-b-0 lg:border-r border-gray-200 dark:border-slate-800 hover:bg-slate-800/40 transition-colors">
-            <div className="text-6xl font-black text-[#1e293b] mb-8 font-serif leading-none tracking-tight">02</div>
-            <Bot className="w-6 h-6 text-gray-400 dark:text-slate-600 dark:text-slate-300 mb-6" />
-            <h3 className="text-xl font-serif text-gray-900 dark:text-white mb-4 font-bold tracking-wide">AI builds your plan</h3>
-            <p className="text-[#94a3b8] leading-relaxed text-[15px]">
-              The model analyzes routes, hotels, restaurants, and attractions to build a perfectly timed itinerary.
-            </p>
-          </div>
-          <div className="p-8 md:p-10 border-r border-gray-200 dark:border-slate-800 border-b lg:border-b-0 hover:bg-slate-800/40 transition-colors">
-            <div className="text-6xl font-black text-[#1e293b] mb-8 font-serif leading-none tracking-tight">03</div>
-            <Edit3 className="w-6 h-6 text-gray-400 dark:text-slate-600 dark:text-slate-300 mb-6" />
-            <h3 className="text-xl font-serif text-gray-900 dark:text-white mb-4 font-bold tracking-wide">Refine & export</h3>
-            <p className="text-[#94a3b8] leading-relaxed text-[15px]">
-              Chat to adjust any detail. Swap activities, change timings, add hidden gems — then export as PDF.
-            </p>
-          </div>
-          <div className="p-8 md:p-10 hover:bg-slate-800/40 transition-colors">
-            <div className="text-6xl font-black text-[#1e293b] mb-8 font-serif leading-none tracking-tight">04</div>
-            <Globe className="w-6 h-6 text-gray-400 dark:text-slate-600 dark:text-slate-300 mb-6" />
-            <h3 className="text-xl font-serif text-gray-900 dark:text-white mb-4 font-bold tracking-wide">Travel smarter</h3>
-            <p className="text-[#94a3b8] leading-relaxed text-[15px]">
-              Get real-time updates, weather alerts, and local tips surfaced through the app as you travel.
-            </p>
-          </div>
-        </div>
-      </section>
-
-      {/* 3. Capabilities Section */}
-      <section id="capabilities" className="py-24 px-4 lg:px-12 xl:px-24 mx-auto max-w-[1400px]">
-        <div className="flex items-center gap-4 mb-8">
-          <div className="w-8 h-[1px] bg-blue-600"></div>
-          <span className="text-xs font-mono tracking-widest text-blue-500">CAPABILITIES</span>
-        </div>
-        
-        <h2 className="text-4xl md:text-5xl font-serif text-gray-900 dark:text-white mb-20 tracking-tight">
-          Built for <span className="italic text-yellow-500">real</span> travelers
-        </h2>
-
-        <div className="grid lg:grid-cols-2 gap-16">
-          <div className="flex flex-col w-full">
-            {[ 
-              { num: '01', type: 'Smart Routing', title: 'Optimized day-by-day routes', desc: 'Our AI groups nearby places and creates realistic schedules to minimize travel time.' },
-              { num: '02', type: 'Budget AI', title: 'Real-time budget tracking', desc: 'Instantly calculate hotel, food, and transport costs. Get alerts if you exceed your budget.' },
-              { num: '03', type: 'Conversational UX', title: 'Natural language planning', desc: 'Say "Replace the museum with a cooking class" or "Add a beach day on Day 3" — WanderMind understands and updates instantly.' },
-              { num: '04', type: 'Local Intelligence', title: 'Off-the-beaten-path gems', desc: 'Discover hidden cafes, uncrowded viewpoints, and local secrets tagged exclusively for you.' }
-            ].map((cap, i) => {
-              const isActive = activeCapability === i;
-              return (
-                <div 
-                  key={i} 
-                  onMouseEnter={() => setActiveCapability(i)}
-                  className={`py-8 px-6 lg:px-8 border-t border-gray-200 dark:border-slate-800 transition-all cursor-pointer ${isActive ? 'border-l-[3px] border-l-yellow-500 bg-slate-900/30' : 'opacity-60 hover:opacity-100 hover:bg-slate-900/10 border-l-[3px] border-l-transparent'}`}
-                >
-                  <div className="flex items-center gap-4 font-mono text-[11px] font-bold tracking-widest mb-4">
-                    <span className={isActive ? 'text-gray-500 dark:text-slate-500 dark:text-slate-400' : 'text-gray-500 dark:text-slate-500'}>{cap.num}</span>
-                    <span className="text-gray-400 dark:text-slate-600">—</span>
-                    <span className={isActive ? 'text-gray-500 dark:text-slate-500 dark:text-slate-400' : 'text-gray-500 dark:text-slate-500 dark:text-slate-400'}>{cap.type}</span>
-                  </div>
-                  <h3 className="text-2xl font-serif text-gray-900 dark:text-white font-bold">{cap.title}</h3>
-                  {isActive && cap.desc && (
-                    <div className="mt-4 animate-in fade-in slide-in-from-top-2 duration-300">
-                      <p className="text-[#94a3b8] text-[15px] leading-relaxed max-w-md">{cap.desc}</p>
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-            <div className="border-t border-gray-200 dark:border-slate-800"></div>
-          </div>
-
-          <div className="bg-gray-50 dark:bg-[#0f172a] border border-gray-200 dark:border-slate-800 rounded-2xl relative flex flex-col min-h-[450px] overflow-hidden lg:ml-8 shadow-2xl">
-            {/* Header */}
-            <div className="bg-white dark:bg-[#0a1628] border-b border-gray-200 dark:border-slate-800/60 p-4 flex items-center justify-between z-10">
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-yellow-400 to-orange-500 flex items-center justify-center">
-                  <Bot className="w-4 h-4 text-gray-900 dark:text-white" />
-                </div>
-                <div>
-                  <div className="font-bold text-gray-900 dark:text-white text-sm">WanderMind AI</div>
-                  <div className="text-[10px] text-emerald-400 font-mono tracking-wider">● ONLINE</div>
-                </div>
-              </div>
+        <div className="section pt-28 pb-20 lg:pt-40 lg:pb-28">
+          <div className="max-w-4xl mx-auto text-center">
+            {/* Pill badge */}
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-blue-50 dark:bg-blue-950/50 border border-blue-200 dark:border-blue-800/50 mb-8">
+              <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />
+              <span className="text-xs font-semibold text-blue-700 dark:text-blue-300 tracking-wide">AI-POWERED TRAVEL PLANNER</span>
             </div>
 
-            {/* Chat Area */}
-            <div className="flex-1 p-6 flex flex-col justify-end space-y-4 bg-gradient-to-b from-[#0f172a] to-[#0a1628]/80 z-10 relative">
-              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 bg-blue-500/10 rounded-full blur-[60px] pointer-events-none"></div>
-              
-              <div className="flex gap-3">
-                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-yellow-400 to-orange-500 flex items-center justify-center shrink-0 mt-1">
-                  <Bot className="w-4 h-4 text-gray-900 dark:text-white" />
-                </div>
-                <div className="max-w-[85%] rounded-2xl px-4 py-3 text-sm leading-relaxed bg-slate-800/50 border border-slate-700/30 text-slate-200 rounded-bl-md shadow-lg backdrop-blur-sm">
-                  Hi! I'm your AI travel agent. Where would you like to go? I can plan your route, optimize your budget, and find hidden gems! ✨
-                </div>
-              </div>
-              
-              <div className="flex gap-2 flex-wrap ml-11">
-                {['5 days in Japan', 'Budget trip to Goa', 'Paris honeymoon'].map((s, i) => (
-                  <button key={i} onClick={onAIChat} className="px-3 py-1.5 bg-slate-800/40 hover:bg-slate-800/80 border border-gray-200 dark:border-slate-700/50 rounded-xl text-xs text-gray-400 dark:text-slate-600 dark:text-slate-300 font-medium transition-colors">
-                    {s}
-                  </button>
-                ))}
-              </div>
-            </div>
+            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold tracking-tight leading-[1.1] text-gray-900 dark:text-white">
+              Plan your perfect trip{' '}
+              <span className="text-gradient">in seconds</span>
+            </h1>
 
-            {/* Input Area */}
-            <div className="p-4 border-t border-gray-200 dark:border-slate-800/60 bg-white dark:bg-[#0a1628]/90 z-10">
-              <div 
-                onClick={onAIChat}
-                className="flex items-center gap-2 bg-slate-800/40 border border-slate-700/40 hover:border-yellow-500/40 rounded-xl py-2 px-3 cursor-text transition-colors group"
+            <p className="mt-6 text-lg sm:text-xl text-gray-500 dark:text-gray-400 max-w-2xl mx-auto leading-relaxed">
+              Stop spending hours on research. TripGenie creates personalized itineraries, finds the best stays, and optimizes your budget — all powered by AI.
+            </p>
+
+            <div className="mt-10 flex flex-col sm:flex-row gap-3 justify-center">
+              <button
+                onClick={() => document.getElementById('plan')?.scrollIntoView({ behavior: 'smooth' })}
+                className="btn-primary px-8 py-3.5 text-base rounded-xl shadow-glow hover:shadow-glow-lg"
               >
-                <div className="flex-1 text-sm text-gray-500 dark:text-slate-500 py-1 px-1">
-                  Type your dream trip here...
+                Start Planning <ArrowRight className="w-4 h-4" />
+              </button>
+              {onAIChat && (
+                <button
+                  onClick={onAIChat}
+                  className="btn-secondary px-8 py-3.5 text-base rounded-xl"
+                >
+                  <Bot className="w-4 h-4" /> Chat with AI
+                </button>
+              )}
+            </div>
+
+            {/* Trust row */}
+            <div className="mt-14 flex flex-wrap items-center justify-center gap-x-10 gap-y-4 text-sm text-gray-400 dark:text-gray-500">
+              <div className="flex items-center gap-2">
+                <Shield className="w-4 h-4 text-green-500" />
+                <span>No credit card required</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Zap className="w-4 h-4 text-amber-500" />
+                <span>Plans in under 30 seconds</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Globe className="w-4 h-4 text-blue-500" />
+                <span>10,000+ destinations</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ━━━ STATS BAR ━━━ */}
+      <section className="border-y border-gray-100 dark:border-gray-800/60 bg-gray-50/50 dark:bg-slate-900/50">
+        <div className="section py-10">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+            {[
+              { value: 200, suffix: 'K+', label: 'Trips Planned' },
+              { value: 150, suffix: '+', label: 'Destinations' },
+              { value: 50, suffix: 'K+', label: 'Happy Travelers' },
+              { value: 99, suffix: '%', label: 'Satisfaction Rate' },
+            ].map((s, i) => (
+              <div key={i}>
+                <div className="text-3xl md:text-4xl font-extrabold text-gray-900 dark:text-white tracking-tight">
+                  <Counter end={s.value} suffix={s.suffix} />
                 </div>
-                <button className="p-2 bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-400 hover:to-orange-400 text-gray-900 dark:text-white rounded-lg transition-transform group-hover:scale-105">
-                  <Send className="w-4 h-4" />
+                <div className="text-sm text-gray-500 dark:text-gray-400 mt-1 font-medium">{s.label}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ━━━ TRIP FORM ━━━ */}
+      <section id="plan" className="scroll-mt-24 py-20">
+        <div className="section">
+          <div className="text-center mb-12">
+            <span className="badge bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400 border border-blue-200/60 dark:border-blue-800/40 mb-4">Plan Your Trip</span>
+            <h2 className="text-3xl md:text-4xl font-extrabold text-gray-900 dark:text-white tracking-tight mt-3">
+              Where do you want to go?
+            </h2>
+            <p className="text-gray-500 dark:text-gray-400 mt-3 max-w-lg mx-auto">
+              Tell us your destination, budget, and interests. We'll handle the rest.
+            </p>
+          </div>
+          <TripFormWizard onSubmit={onSubmit} />
+        </div>
+      </section>
+
+      {/* ━━━ HOW IT WORKS ━━━ */}
+      <section className="py-20 bg-gray-50/70 dark:bg-slate-900/40">
+        <div className="section">
+          <div className="text-center mb-14">
+            <span className="badge bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 border border-indigo-200/60 dark:border-indigo-800/40 mb-4">How It Works</span>
+            <h2 className="text-3xl md:text-4xl font-extrabold text-gray-900 dark:text-white tracking-tight mt-3">
+              Three steps to your perfect trip
+            </h2>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-6 lg:gap-8">
+            {[
+              { step: '01', icon: MapPin, title: 'Tell us your dream', desc: 'Enter your destination, dates, budget, and travel style. Our AI understands exactly what you need.' },
+              { step: '02', icon: Sparkles, title: 'AI builds your plan', desc: 'We analyze routes, hotels, restaurants, and attractions to craft a day-by-day optimized itinerary.' },
+              { step: '03', icon: TrendingUp, title: 'Refine & go', desc: 'Chat with our AI to swap activities, adjust timings, and fine-tune your plan. Then export and travel!' },
+            ].map((item, i) => (
+              <div key={i} className="card p-8 hover:-translate-y-1 transition-all duration-300 group">
+                <div className="flex items-center gap-3 mb-5">
+                  <div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-950/50 flex items-center justify-center group-hover:bg-blue-100 dark:group-hover:bg-blue-900/30 transition-colors">
+                    <item.icon className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                  </div>
+                  <span className="text-xs font-bold text-gray-300 dark:text-gray-600 tracking-widest">{item.step}</span>
+                </div>
+                <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">{item.title}</h3>
+                <p className="text-gray-500 dark:text-gray-400 text-[15px] leading-relaxed">{item.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ━━━ POPULAR DESTINATIONS ━━━ */}
+      <section className="py-20">
+        <div className="section">
+          <div className="flex flex-col sm:flex-row items-start sm:items-end justify-between gap-4 mb-10">
+            <div>
+              <span className="badge bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 border border-emerald-200/60 dark:border-emerald-800/40 mb-4">Explore</span>
+              <h2 className="text-3xl md:text-4xl font-extrabold text-gray-900 dark:text-white tracking-tight mt-3">
+                Popular destinations
+              </h2>
+            </div>
+            <button onClick={() => document.getElementById('plan')?.scrollIntoView({ behavior: 'smooth' })} className="btn-ghost text-sm">
+              View all <ArrowRight className="w-4 h-4" />
+            </button>
+          </div>
+
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+            {DESTINATIONS.map((d, i) => (
+              <div key={i} className="group relative rounded-2xl overflow-hidden cursor-pointer" onClick={() => document.getElementById('plan')?.scrollIntoView({ behavior: 'smooth' })}>
+                <div className="aspect-[4/3] overflow-hidden">
+                  <img src={d.image} alt={d.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" />
+                </div>
+                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+                <div className="absolute top-3 right-3">
+                  <span className="badge bg-white/90 dark:bg-gray-900/90 text-gray-700 dark:text-gray-300 backdrop-blur-sm text-[11px]">{d.tag}</span>
+                </div>
+                <div className="absolute bottom-0 left-0 right-0 p-5">
+                  <h3 className="text-xl font-bold text-white">{d.name}</h3>
+                  <div className="flex items-center justify-between mt-1">
+                    <span className="text-white/70 text-sm">{d.country}</span>
+                    <div className="flex items-center gap-1 text-amber-400 text-sm font-semibold">
+                      <Star className="w-3.5 h-3.5 fill-current" /> {d.rating}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ━━━ FEATURES ━━━ */}
+      <section className="py-20 bg-gray-50/70 dark:bg-slate-900/40">
+        <div className="section">
+          <div className="text-center mb-14">
+            <span className="badge bg-purple-50 dark:bg-purple-950/50 text-purple-600 dark:text-purple-400 border border-purple-200/60 dark:border-purple-800/40 mb-4">Features</span>
+            <h2 className="text-3xl md:text-4xl font-extrabold text-gray-900 dark:text-white tracking-tight mt-3">
+              Everything you need to travel smarter
+            </h2>
+          </div>
+
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+            {[
+              { icon: Zap, title: 'Instant Generation', desc: 'Get a complete day-by-day itinerary in under 30 seconds.', color: 'text-amber-500 bg-amber-50 dark:bg-amber-950/30' },
+              { icon: MapPin, title: 'Smart Routing', desc: 'AI groups nearby places to minimize travel time between stops.', color: 'text-emerald-500 bg-emerald-50 dark:bg-emerald-950/30' },
+              { icon: TrendingUp, title: 'Budget Tracking', desc: 'Real-time cost breakdown for hotels, food, and transport.', color: 'text-blue-500 bg-blue-50 dark:bg-blue-950/30' },
+              { icon: Bot, title: 'AI Chat Agent', desc: 'Modify your plan through natural conversation. Just talk.', color: 'text-purple-500 bg-purple-50 dark:bg-purple-950/30' },
+              { icon: Users, title: 'Group Planning', desc: 'Plan together with friends, vote on activities, split costs.', color: 'text-pink-500 bg-pink-50 dark:bg-pink-950/30' },
+              { icon: Clock, title: 'Local Intelligence', desc: 'Hidden gems, best times to visit, and local tips for every spot.', color: 'text-teal-500 bg-teal-50 dark:bg-teal-950/30' },
+            ].map((f, i) => (
+              <div key={i} className="card p-6 hover:-translate-y-0.5 transition-all duration-300">
+                <div className={`w-10 h-10 rounded-xl ${f.color} flex items-center justify-center mb-4`}>
+                  <f.icon className="w-5 h-5" />
+                </div>
+                <h3 className="font-bold text-gray-900 dark:text-white mb-1.5">{f.title}</h3>
+                <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed">{f.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ━━━ TESTIMONIALS ━━━ */}
+      <section className="py-20">
+        <div className="section">
+          <div className="text-center mb-14">
+            <span className="badge bg-amber-50 dark:bg-amber-950/50 text-amber-600 dark:text-amber-400 border border-amber-200/60 dark:border-amber-800/40 mb-4">Reviews</span>
+            <h2 className="text-3xl md:text-4xl font-extrabold text-gray-900 dark:text-white tracking-tight mt-3">
+              Loved by travelers worldwide
+            </h2>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-6">
+            {TESTIMONIALS.map((t, i) => (
+              <div key={i} className="card p-6 flex flex-col">
+                <div className="flex gap-1 mb-4">
+                  {[...Array(t.rating)].map((_, j) => (
+                    <Star key={j} className="w-4 h-4 text-amber-400 fill-current" />
+                  ))}
+                </div>
+                <p className="text-gray-600 dark:text-gray-300 text-[15px] leading-relaxed flex-1">"{t.text}"</p>
+                <div className="flex items-center gap-3 mt-5 pt-5 border-t border-gray-100 dark:border-gray-800">
+                  <div className="w-9 h-9 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-blue-600 dark:text-blue-400 font-bold text-sm">
+                    {t.avatar}
+                  </div>
+                  <div>
+                    <div className="font-semibold text-gray-900 dark:text-white text-sm">{t.name}</div>
+                    <div className="text-xs text-gray-500 dark:text-gray-400">{t.role}</div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ━━━ FAQ ━━━ */}
+      <section className="py-20 bg-gray-50/70 dark:bg-slate-900/40">
+        <div className="section">
+          <div className="max-w-2xl mx-auto">
+            <div className="text-center mb-10">
+              <span className="badge bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-700 mb-4">FAQ</span>
+              <h2 className="text-3xl md:text-4xl font-extrabold text-gray-900 dark:text-white tracking-tight mt-3">
+                Frequently asked questions
+              </h2>
+            </div>
+            <div className="card p-6 sm:p-8">
+              {FAQS.map((faq, i) => <FAQItem key={i} {...faq} />)}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ━━━ CTA ━━━ */}
+      <section className="py-20">
+        <div className="section">
+          <div className="relative rounded-3xl bg-gradient-to-br from-blue-600 to-indigo-700 p-10 sm:p-16 text-center overflow-hidden">
+            <div className="absolute top-0 right-0 w-96 h-96 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2 blur-3xl" />
+            <div className="absolute bottom-0 left-0 w-64 h-64 bg-blue-400/20 rounded-full translate-y-1/2 -translate-x-1/2 blur-3xl" />
+            <div className="relative">
+              <h2 className="text-3xl md:text-4xl font-extrabold text-white tracking-tight">
+                Ready to plan your next adventure?
+              </h2>
+              <p className="text-blue-100 mt-4 max-w-lg mx-auto text-lg">
+                Join thousands of travelers who plan smarter with TripGenie.
+              </p>
+              <div className="mt-8 flex flex-col sm:flex-row gap-3 justify-center">
+                <button onClick={() => document.getElementById('plan')?.scrollIntoView({ behavior: 'smooth' })} className="btn bg-white text-blue-700 hover:bg-blue-50 px-8 py-3.5 text-base font-bold rounded-xl shadow-elevated">
+                  Start Planning — It's Free <ArrowRight className="w-4 h-4" />
                 </button>
               </div>
             </div>
           </div>
         </div>
       </section>
-
-      {/* 4. Live Preview Section */}
-      <section className="py-24 px-4 lg:px-12 xl:px-24 mx-auto max-w-[1400px]">
-        <div className="flex items-center gap-4 mb-8">
-          <div className="w-8 h-[1px] bg-blue-600"></div>
-          <span className="text-xs font-mono tracking-widest text-blue-500">LIVE PREVIEW</span>
-        </div>
-        
-        <h2 className="text-4xl md:text-5xl font-serif text-gray-900 dark:text-white mb-6 tracking-tight">
-          See it in <span className="italic text-yellow-500">action</span>
-        </h2>
-        <p className="text-[17px] text-[#94a3b8] max-w-2xl mb-16 font-medium">
-          A glimpse of what WanderMind generates — from a simple prompt to a full itinerary.
-        </p>
-
-        <div className="rounded-sm border border-gray-200 dark:border-slate-800 bg-gray-50 dark:bg-[#0B1120] overflow-hidden shadow-2xl relative">
-          {/* Header OS style */}
-          <div className="bg-gray-50 dark:bg-[#0B1120] border-b border-gray-200 dark:border-slate-800 px-6 py-4 flex items-center gap-4">
-            <div className="flex gap-2.5">
-              <div className="w-3.5 h-3.5 rounded-full bg-[#ff5f56]"></div>
-              <div className="w-3.5 h-3.5 rounded-full bg-[#ffbd2e]"></div>
-              <div className="w-3.5 h-3.5 rounded-full bg-[#27c93f]"></div>
-            </div>
-            <div className="font-mono text-xs text-gray-500 dark:text-slate-500 flex-1 pl-4 tracking-wider">
-              wandermind.app — Itinerary Generator
-            </div>
-          </div>
-          
-          <div className="grid lg:grid-cols-2 divide-y lg:divide-y-0 lg:divide-x divide-slate-800">
-            {/* Left Chat Frame */}
-            <div className="p-8 lg:p-12 space-y-10 bg-gray-50 dark:bg-[#0f172a]/50">
-              
-              <div className="flex flex-col items-end w-full space-y-2">
-                <div className="bg-[#1e293b] p-6 rounded-sm text-[15px] text-gray-400 dark:text-slate-600 dark:text-slate-300 border border-gray-200 dark:border-slate-800/80 shadow-md max-w-[95%] leading-relaxed font-sans">
-                  Plan a 3-day trip to Jaipur for 2 people. Budget ₹15,000. We love forts, local food, and sunsets. Avoid crowded tourist spots.
-                </div>
-              </div>
-              
-              <div className="flex flex-col items-start w-full space-y-2">
-                <div className="bg-transparent border border-[#334155] p-6 rounded-sm max-w-[95%] relative">
-                  <div className="flex items-center gap-2 mb-3">
-                    <Sparkles className="w-3.5 h-3.5 text-yellow-500" />
-                    <span className="font-mono text-[11px] font-bold text-yellow-500 tracking-widest">WanderMind</span>
-                  </div>
-                  <p className="text-[15px] text-[#cbd5e1] leading-relaxed">
-                    Perfect! Jaipur in 3 days on ₹15,000 — I've built a route that hits the grand forts at golden hour, skips tourist lunch traps, and ends each evening at a rooftop with a view. Here's your plan <ArrowRight className="inline w-4 h-4 text-gray-500 dark:text-slate-500 ml-1" />
-                  </p>
-                </div>
-              </div>
-              
-              <div className="flex flex-col items-end w-full space-y-2 pt-6">
-                <div className="bg-[#1e293b] p-6 rounded-sm text-[15px] text-gray-400 dark:text-slate-600 dark:text-slate-300 border border-gray-200 dark:border-slate-800/80 shadow-md max-w-[95%] leading-relaxed font-sans">
-                  Can you swap Day 2 afternoon with a local bazaar instead?
-                </div>
-              </div>
-
-               <div className="flex flex-col items-start w-full space-y-2">
-                <div className="bg-transparent border border-[#334155] p-6 rounded-sm max-w-[95%] relative">
-                  <div className="flex items-center gap-2 mb-3">
-                    <Sparkles className="w-3.5 h-3.5 text-yellow-500" />
-                    <span className="font-mono text-[11px] font-bold text-yellow-500 tracking-widest">WanderMind</span>
-                  </div>
-                  <p className="text-[15px] text-[#cbd5e1] leading-relaxed">
-                    Done! I've replaced the Amber Fort afternoon with Johari Bazaar and Bapu Bazaar — perfect for local textiles and street food. You'll save about ₹800 too.
-                  </p>
-                </div>
-              </div>
-
-            </div>
-
-            {/* Right Itinerary Frame */}
-            <div className="p-8 lg:p-12 space-y-8 bg-gray-50 dark:bg-[#0B1120]">
-              <div className="font-mono text-[11px] font-bold tracking-widest text-[#60a5fa] flex items-center gap-3 mb-10">
-                <span className="text-blue-500">+</span> GENERATED ITINERARY
-              </div>
-              
-              {[
-                { 
-                  day: 'DAY 01', 
-                  title: 'THE PINK CITY AWAKENS', 
-                  items: ['7:30 AM · Nahargarh Fort sunrise', '10:00 AM · City Palace (off-peak entry)', '1:00 PM · Laxmi Misthan Bhandar thali', '4:00 PM · Hawa Mahal golden hour'] 
-                },
-                { 
-                  day: 'DAY 02', 
-                  title: 'BAZAARS & BATTLEMENTS', 
-                  items: ['8:00 AM · Amber Fort (early access)', '12:30 PM · Johari Bazaar & Bapu Bazaar', '5:00 PM · Rooftop café, Old City'] 
-                },
-                { 
-                  day: 'DAY 03', 
-                  title: 'HIDDEN JAIPUR', 
-                  items: ['9:00 AM · Galta Ji Temple', '1:00 PM · Local thali experience', '4:00 PM · Jal Mahal lake walk'] 
-                }
-              ].map((day, i) => (
-                <div key={i} className="border border-[#1e293b] p-6 lg:p-8 hover:bg-gray-50 dark:bg-[#0f172a] transition-colors rounded-sm">
-                  <h4 className="font-mono text-xs tracking-[0.15em] font-bold text-yellow-500 mb-6 flex items-center gap-3">
-                    {day.day} <span className="text-gray-400 dark:text-slate-600 font-sans font-light">—</span> {day.title}
-                  </h4>
-                  <ul className="space-y-4">
-                    {day.items.map((item, j) => (
-                      <li key={j} className="flex items-start gap-4 text-[15px] text-[#94a3b8] font-sans">
-                        <ArrowRight className="w-4 h-4 text-blue-400 shrink-0 mt-0.5" />
-                        <span>{item}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
-      
-      {/* 5. Minimal WanderFooter */}
-      <footer className="border-t border-gray-200 dark:border-slate-800/80 bg-gray-50 dark:bg-[#0B1120] py-12 text-center text-gray-500 dark:text-slate-500 font-mono text-xs tracking-widest">
-        WANDERMIND © {new Date().getFullYear()} — INTELLIGENT ROUTING
-      </footer>
     </div>
   );
 };

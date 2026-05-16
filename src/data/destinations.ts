@@ -387,11 +387,86 @@ const DESTINATIONS: Record<string, DestinationInfo> = {
       },
     ]
   },
+  usa: {
+    center: [39.8283, -98.5795],
+    currency: '$',
+    hotels: [
+      { name: 'The Plaza Hotel', area: 'Manhattan, NYC', rating: 4.9, pricePerNight: 600, image: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=600', style: 'luxury' },
+      { name: 'Pod 51 Hotel', area: 'Midtown, NYC', rating: 4.4, pricePerNight: 150, image: 'https://images.unsplash.com/photo-1551882547-ff40c0d13c11?w=600', style: 'mid-range' },
+      { name: 'HI New York City Hostel', area: 'Upper West Side, NYC', rating: 4.1, pricePerNight: 50, image: 'https://images.unsplash.com/photo-1582719508461-905c673771fd?w=600', style: 'budget' },
+    ],
+    days: [
+      {
+        title: 'New York City Icons',
+        subtitle: 'Statue of Liberty, Times Square & Central Park',
+        places: [
+          { name: 'Statue of Liberty & Ellis Island', description: 'Ferry to the iconic symbol of freedom and explore the immigration museum on Ellis Island.', time: '8:00 AM', period: 'morning', image: 'https://images.unsplash.com/photo-1492666673288-3c4b4d5a4e6e?w=600', lat: 40.6892, lng: -74.0445 },
+          { name: 'Times Square & Broadway', description: 'Experience the dazzling neon lights of Times Square and catch a world-class Broadway show.', time: '1:00 PM', period: 'afternoon', image: 'https://images.unsplash.com/photo-1534430480872-3498386e7856?w=600', lat: 40.7580, lng: -73.9855 },
+          { name: 'Central Park Evening Walk', description: 'Stroll through the iconic 843-acre urban oasis with its bridges, fountains, and skyline views.', time: '6:00 PM', period: 'evening', image: 'https://images.unsplash.com/photo-1534430480872-3498386e7856?w=600', lat: 40.7829, lng: -73.9654 },
+        ]
+      },
+      {
+        title: 'Washington D.C. Monuments',
+        subtitle: 'The nation\'s capital & historic landmarks',
+        places: [
+          { name: 'Lincoln Memorial & National Mall', description: 'Stand before the majestic Lincoln Memorial and walk the historic National Mall.', time: '9:00 AM', period: 'morning', image: 'https://images.unsplash.com/photo-1617581629397-a72507c3de9e?w=600', lat: 38.8893, lng: -77.0502 },
+          { name: 'Smithsonian Museums', description: 'Explore the world\'s largest museum complex with free entry — Air & Space, Natural History, and more.', time: '1:00 PM', period: 'afternoon', image: 'https://images.unsplash.com/photo-1569017388730-020b5f80a004?w=600', lat: 38.8881, lng: -77.0199 },
+          { name: 'Georgetown Waterfront Dinner', description: 'Evening stroll along the Potomac River with charming restaurants and boutique shops.', time: '6:30 PM', period: 'evening', image: 'https://images.unsplash.com/photo-1617581629397-a72507c3de9e?w=600', lat: 38.9029, lng: -77.0604 },
+        ]
+      },
+      {
+        title: 'Grand Canyon Adventure',
+        subtitle: 'One of the seven natural wonders',
+        places: [
+          { name: 'Grand Canyon South Rim Sunrise', description: 'Watch the sun illuminate the mile-deep canyon layers in breathtaking colors.', time: '5:30 AM', period: 'morning', image: 'https://images.unsplash.com/photo-1474044159687-1ee9f3a51722?w=600', lat: 36.0544, lng: -112.1401 },
+          { name: 'Bright Angel Trail Hike', description: 'Hike along the most popular trail into the Grand Canyon with stunning panoramic views.', time: '10:00 AM', period: 'afternoon', image: 'https://images.unsplash.com/photo-1474044159687-1ee9f3a51722?w=600', lat: 36.0575, lng: -112.1438 },
+          { name: 'Desert View Watchtower Sunset', description: 'End the day at the historic watchtower with 360° views of the canyon and painted desert.', time: '5:00 PM', period: 'evening', image: 'https://images.unsplash.com/photo-1474044159687-1ee9f3a51722?w=600', lat: 36.0426, lng: -111.8261 },
+        ]
+      },
+      {
+        title: 'Las Vegas Strip & Shows',
+        subtitle: 'Entertainment capital of the world',
+        places: [
+          { name: 'Bellagio Fountains & Casino Walk', description: 'Watch the iconic dancing fountains and explore the dazzling casinos along the Strip.', time: '10:00 AM', period: 'morning', image: 'https://images.unsplash.com/photo-1605833556294-ea5c7a74f57d?w=600', lat: 36.1126, lng: -115.1767 },
+          { name: 'High Roller Observation Wheel', description: 'Ride the world\'s tallest observation wheel for incredible views of the Las Vegas valley.', time: '2:00 PM', period: 'afternoon', image: 'https://images.unsplash.com/photo-1605833556294-ea5c7a74f57d?w=600', lat: 36.1175, lng: -115.1682 },
+          { name: 'Fremont Street Experience', description: 'The original Las Vegas strip with its massive LED canopy, live music, and zip lines.', time: '8:00 PM', period: 'evening', image: 'https://images.unsplash.com/photo-1605833556294-ea5c7a74f57d?w=600', lat: 36.1699, lng: -115.1398 },
+        ]
+      },
+      {
+        title: 'San Francisco Highlights',
+        subtitle: 'Golden Gate, cable cars & Alcatraz',
+        places: [
+          { name: 'Golden Gate Bridge Walk', description: 'Walk across the world-famous 1.7-mile suspension bridge with stunning bay views.', time: '8:00 AM', period: 'morning', image: 'https://images.unsplash.com/photo-1501594907352-04cda38ebc29?w=600', lat: 37.8199, lng: -122.4783 },
+          { name: 'Alcatraz Island Tour', description: 'Ferry to the legendary former prison island and explore the chilling cell blocks.', time: '1:00 PM', period: 'afternoon', image: 'https://images.unsplash.com/photo-1501594907352-04cda38ebc29?w=600', lat: 37.8270, lng: -122.4230 },
+          { name: 'Fisherman\'s Wharf & Pier 39', description: 'Fresh seafood, sea lions, and stunning waterfront views at this iconic pier.', time: '5:30 PM', period: 'evening', image: 'https://images.unsplash.com/photo-1501594907352-04cda38ebc29?w=600', lat: 37.8080, lng: -122.4177 },
+        ]
+      },
+      {
+        title: 'Los Angeles & Hollywood',
+        subtitle: 'Stars, beaches & movie magic',
+        places: [
+          { name: 'Hollywood Sign & Walk of Fame', description: 'See the iconic Hollywood Sign and walk along the star-studded boulevard.', time: '9:00 AM', period: 'morning', image: 'https://images.unsplash.com/photo-1534190760961-74e8c1c5c3da?w=600', lat: 34.1341, lng: -118.3215 },
+          { name: 'Santa Monica Pier & Beach', description: 'Ride the Pacific Park ferris wheel and soak up the sun on the famous beach.', time: '1:00 PM', period: 'afternoon', image: 'https://images.unsplash.com/photo-1534190760961-74e8c1c5c3da?w=600', lat: 34.0095, lng: -118.4970 },
+          { name: 'Griffith Observatory Sunset', description: 'Stunning panoramic views of LA, the Hollywood sign, and the Pacific Ocean at sunset.', time: '6:00 PM', period: 'evening', image: 'https://images.unsplash.com/photo-1534190760961-74e8c1c5c3da?w=600', lat: 34.1184, lng: -118.3004 },
+        ]
+      },
+      {
+        title: 'Miami Beach & Art Deco',
+        subtitle: 'Tropical vibes & vibrant nightlife',
+        places: [
+          { name: 'South Beach & Ocean Drive', description: 'Walk along the iconic pastel Art Deco buildings and relax on the white-sand beach.', time: '9:00 AM', period: 'morning', image: 'https://images.unsplash.com/photo-1535498730771-e735b998cd64?w=600', lat: 25.7826, lng: -80.1341 },
+          { name: 'Wynwood Walls Street Art', description: 'Explore the outdoor museum of massive, colorful murals by world-renowned artists.', time: '1:30 PM', period: 'afternoon', image: 'https://images.unsplash.com/photo-1535498730771-e735b998cd64?w=600', lat: 25.8011, lng: -80.1991 },
+          { name: 'Little Havana & Cuban Dinner', description: 'Experience authentic Cuban culture, hand-rolled cigars, and delicious mojitos on Calle Ocho.', time: '6:00 PM', period: 'evening', image: 'https://images.unsplash.com/photo-1535498730771-e735b998cd64?w=600', lat: 25.7653, lng: -80.2191 },
+        ]
+      },
+    ],
+  },
 };
 
 // Alias mapping for alternate names
 const ALIASES: Record<string, string> = {
-  tokyo: 'japan', france: 'paris', 'new york': 'london', nyc: 'london',
+  tokyo: 'japan', france: 'paris', 'new york': 'usa', nyc: 'usa',
+  'united states': 'usa', america: 'usa', 'us': 'usa',
   uk: 'london', indonesia: 'bali', 'united arab emirates': 'dubai', uae: 'dubai',
   india: 'jaipur', rajasthan: 'jaipur', england: 'london',
 };

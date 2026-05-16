@@ -20,7 +20,6 @@ export const AuthModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () =>
     e.preventDefault();
     setError('');
     
-    // Basic validations
     if (!email || !password) return setError('Email and password are required');
     if (password.length < 6) return setError('Password must be at least 6 characters');
     
@@ -36,9 +35,8 @@ export const AuthModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () =>
       } else {
         await register(name, email, password);
       }
-      onClose(); // close on success
+      onClose();
     } catch (err: any) {
-      // Basic firebase error parsing
       let msg = err.message;
       if (err.code === 'auth/wrong-password') msg = 'Incorrect password';
       else if (err.code === 'auth/user-not-found') msg = 'No user found with this email';
@@ -63,121 +61,82 @@ export const AuthModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () =>
     }
   };
 
-  return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 animate-in fade-in duration-300">
-      <div 
-        className="absolute inset-0 bg-black/60 backdrop-blur-sm"
-        onClick={onClose}
-      />
-      
-      <div className="relative w-full max-w-md bg-white/10 dark:bg-gray-900/40 backdrop-blur-xl border border-white/20 dark:border-gray-700/50 rounded-3xl shadow-[0_8px_32px_0_rgba(0,0,0,0.3)] overflow-hidden">
-        {/* Glow effect */}
-        <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500"></div>
-        <div className="absolute -top-32 -right-32 w-64 h-64 bg-blue-500/20 rounded-full blur-3xl"></div>
-        <div className="absolute -bottom-32 -left-32 w-64 h-64 bg-purple-500/20 rounded-full blur-3xl"></div>
+  const inputClass = "w-full bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-xl pl-10 pr-4 py-3 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all text-sm text-gray-900 dark:text-white placeholder:text-gray-400";
 
-        <div className="relative p-8">
+  return (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 animate-in fade-in duration-200">
+      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
+      
+      <div className="relative w-full max-w-md bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl shadow-elevated overflow-hidden animate-in slide-in-from-bottom-4 duration-300">
+        <div className="p-8">
           <button 
             onClick={onClose}
-            className="absolute top-4 right-4 p-2 text-gray-400 hover:text-white bg-white/5 hover:bg-white/10 rounded-full transition-colors"
+            className="absolute top-4 right-4 p-1.5 text-gray-400 hover:text-gray-600 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
           >
-            <X className="w-5 h-5" />
+            <X className="w-4 h-4" />
           </button>
 
           <div className="text-center mb-8">
-            <h2 className="text-3xl font-black text-white mb-2">
-              {isLogin ? 'Welcome Back' : 'Create Account'}
+            <h2 className="text-2xl font-extrabold text-gray-900 dark:text-white mb-1">
+              {isLogin ? 'Welcome back' : 'Create account'}
             </h2>
-            <p className="text-gray-300">
-              {isLogin ? 'Enter your details to access your trips' : 'Join WanderMind to explore the world'}
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              {isLogin ? 'Enter your details to access your trips' : 'Join TripGenie to explore the world'}
             </p>
           </div>
 
           {error && (
-            <div className="mb-6 p-3 bg-red-500/10 border border-red-500/50 rounded-xl text-red-200 text-sm text-center">
+            <div className="mb-6 p-3 bg-red-50 dark:bg-red-500/10 border border-red-100 dark:border-red-500/20 rounded-xl text-red-600 dark:text-red-400 text-sm text-center font-medium">
               {error}
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-3">
             {!isLogin && (
               <div className="relative">
-                <UserIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                <input 
-                  type="text" 
-                  placeholder="Full Name" 
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  className="w-full bg-white/5 border border-white/10 focus:border-blue-500/50 rounded-xl py-3 pl-11 pr-4 text-white placeholder-gray-400 outline-none transition-all"
-                />
+                <UserIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <input type="text" placeholder="Full Name" value={name} onChange={(e) => setName(e.target.value)} className={inputClass} />
               </div>
             )}
             
             <div className="relative">
-              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-              <input 
-                type="email" 
-                placeholder="Email Address" 
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full bg-white/5 border border-white/10 focus:border-blue-500/50 rounded-xl py-3 pl-11 pr-4 text-white placeholder-gray-400 outline-none transition-all"
-              />
+              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <input type="email" placeholder="Email Address" value={email} onChange={(e) => setEmail(e.target.value)} className={inputClass} />
             </div>
 
             <div className="relative">
-              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-              <input 
-                type="password" 
-                placeholder="Password" 
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full bg-white/5 border border-white/10 focus:border-blue-500/50 rounded-xl py-3 pl-11 pr-4 text-white placeholder-gray-400 outline-none transition-all"
-              />
+              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <input type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} className={inputClass} />
             </div>
 
             {!isLogin && (
               <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                <input 
-                  type="password" 
-                  placeholder="Confirm Password" 
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  className="w-full bg-white/5 border border-white/10 focus:border-blue-500/50 rounded-xl py-3 pl-11 pr-4 text-white placeholder-gray-400 outline-none transition-all"
-                />
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <input type="password" placeholder="Confirm Password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} className={inputClass} />
               </div>
             )}
 
-            <button 
-              disabled={loading}
-              type="submit"
-              className="w-full py-3 mt-4 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white rounded-xl font-bold transition-all shadow-lg shadow-blue-500/25 flex justify-center items-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
-            >
-              {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : (isLogin ? <LogIn className="w-5 h-5" /> : null)}
+            <button disabled={loading} type="submit" className="btn-primary w-full py-3 text-sm mt-2">
+              {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : (isLogin ? <LogIn className="w-4 h-4" /> : null)}
               {loading ? 'Processing...' : (isLogin ? 'Sign In' : 'Create Account')}
             </button>
           </form>
 
           <div className="my-6 flex items-center gap-4">
-            <div className="h-px bg-white/10 flex-1"></div>
-            <span className="text-gray-400 text-sm font-medium">OR</span>
-            <div className="h-px bg-white/10 flex-1"></div>
+            <div className="h-px bg-gray-200 dark:bg-gray-700 flex-1" />
+            <span className="text-gray-400 text-xs font-medium">OR</span>
+            <div className="h-px bg-gray-200 dark:bg-gray-700 flex-1" />
           </div>
 
-          <button 
-            onClick={handleGoogle}
-            disabled={loading}
-            className="w-full py-3 bg-white/5 hover:bg-white/10 border border-white/10 text-white rounded-xl font-bold transition-all flex justify-center items-center gap-3 disabled:opacity-70"
-          >
-            <Chrome className="w-5 h-5 text-blue-400" />
-            Continue with Google
+          <button onClick={handleGoogle} disabled={loading} className="btn-secondary w-full py-3 text-sm">
+            <Chrome className="w-4 h-4 text-blue-500" /> Continue with Google
           </button>
 
-          <div className="mt-8 text-center text-sm text-gray-400">
+          <div className="mt-6 text-center text-sm text-gray-500 dark:text-gray-400">
             {isLogin ? "Don't have an account? " : "Already have an account? "}
             <button 
               onClick={() => { setIsLogin(!isLogin); setError(''); }}
-              className="text-blue-400 hover:text-blue-300 font-bold transition-colors"
+              className="text-blue-600 dark:text-blue-400 hover:underline font-semibold"
             >
               {isLogin ? 'Sign up' : 'Log in'}
             </button>

@@ -1,40 +1,128 @@
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Space+Mono:ital,wght@0,400;0,700;1,400;1,700&family=Inter:wght@400;500;600;700;800;900&display=swap');
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+/* ─── Design System Foundation ─── */
 @layer base {
+  *,
+  *::before,
+  *::after {
+    @apply border-gray-200 dark:border-gray-800;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
   body {
-    @apply antialiased overflow-y-scroll bg-gray-50 dark:bg-[#0B1120];
-    font-family: 'Inter', sans-serif;
+    @apply antialiased bg-white text-gray-900 dark:text-gray-100;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    font-feature-settings: 'cv11', 'ss01';
+  }
+
+  /* Improved selection */
+  ::selection {
+    background-color: rgba(51, 139, 255, 0.2);
   }
 }
 
-.font-serif {
-  font-family: 'Playfair Display', serif;
+/* Dark mode body background — outside @layer to ensure it applies */
+html.dark body,
+html.dark {
+  background-color: #020617;
+  color: #f1f5f9;
 }
 
-.font-mono {
-  font-family: 'Space Mono', monospace;
+/* ─── Component Layer ─── */
+@layer components {
+  /* Glass card */
+  .glass {
+    @apply bg-white/70 dark:bg-gray-900/50 backdrop-blur-xl border border-gray-200/60 dark:border-gray-700/40;
+  }
+
+  /* Subtle card */
+  .card {
+    @apply bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-2xl;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.04), 0 1px 2px -1px rgba(0, 0, 0, 0.04);
+  }
+  .card:hover {
+    box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.08);
+  }
+
+  /* Section container */
+  .section {
+    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+  }
+
+  /* Badge */
+  .badge {
+    @apply inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold;
+  }
+
+  /* Skeleton shimmer */
+  .skeleton {
+    @apply bg-gray-200 dark:bg-gray-800 rounded-lg animate-pulse;
+  }
+
+  /* Clean button base */
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 font-semibold rounded-xl px-5 py-2.5 transition-all duration-200 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+  .btn-primary {
+    @apply btn text-white shadow-sm hover:shadow-md;
+    background-color: #1b6af5;
+  }
+  .btn-primary:hover {
+    background-color: #1454e1;
+  }
+  .btn-secondary {
+    @apply btn bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-900 dark:text-white;
+  }
+  .btn-ghost {
+    @apply btn hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-400;
+  }
 }
 
-/* Custom scrollbar for chat and panels */
+/* ─── Utility Layer ─── */
+@layer utilities {
+  /* Text gradient utility */
+  .text-gradient {
+    @apply bg-clip-text text-transparent;
+    background-image: linear-gradient(to right, #1b6af5, #4f46e5);
+  }
+  .dark .text-gradient {
+    background-image: linear-gradient(to right, #59adff, #818cf8);
+  }
+
+  /* Smooth reveal on scroll */
+  .reveal {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+  }
+  .reveal.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ─── Scrollbar ─── */
 .custom-scrollbar::-webkit-scrollbar {
-  width: 4px;
+  width: 5px;
 }
 .custom-scrollbar::-webkit-scrollbar-track {
   background: transparent;
 }
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: rgba(100, 116, 139, 0.3);
+  background: rgba(100, 116, 139, 0.25);
   border-radius: 100px;
 }
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: rgba(100, 116, 139, 0.5);
+  background: rgba(100, 116, 139, 0.45);
 }
 
-/* Hide scrollbar utility */
 .no-scrollbar::-webkit-scrollbar {
   display: none;
 }
@@ -43,46 +131,39 @@
   scrollbar-width: none;
 }
 
-/* Slide-in animations */
+/* ─── Animations ─── */
 @keyframes slideInFromTop {
   from { opacity: 0; transform: translateY(-8px); }
   to { opacity: 1; transform: translateY(0); }
 }
-
-@keyframes slideInFromRight {
-  from { opacity: 0; transform: translateX(100%); }
-  to { opacity: 1; transform: translateX(0); }
-}
-
 @keyframes slideInFromBottom {
   from { opacity: 0; transform: translateY(8px); }
   to { opacity: 1; transform: translateY(0); }
 }
-
 @keyframes fadeIn {
   from { opacity: 0; }
   to { opacity: 1; }
 }
 
 .animate-in {
-  animation-duration: 200ms;
+  animation-duration: 300ms;
   animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
   animation-fill-mode: both;
 }
+.slide-in-from-top-2 { animation-name: slideInFromTop; }
+.slide-in-from-bottom-2 { animation-name: slideInFromBottom; }
+.slide-in-from-bottom-4 { animation-name: slideInFromBottom; animation-duration: 400ms; }
+.slide-in-from-bottom-8 { animation-name: slideInFromBottom; animation-duration: 500ms; }
+.fade-in { animation-name: fadeIn; }
+.zoom-in-95 { animation-name: fadeIn; }
 
-.slide-in-from-top-2 {
-  animation-name: slideInFromTop;
+/* ─── Font class overrides for backward compat ─── */
+.font-serif {
+  font-family: 'Inter', system-ui, sans-serif;
+  font-weight: 800;
+  letter-spacing: -0.02em;
 }
-
-.slide-in-from-right {
-  animation-name: slideInFromRight;
+.font-mono {
+  font-family: 'SF Mono', 'Fira Code', 'Fira Mono', 'Roboto Mono', monospace;
+  font-feature-settings: 'liga' 0;
 }
-
-.slide-in-from-bottom-2 {
-  animation-name: slideInFromBottom;
-}
-
-.fade-in {
-  animation-name: fadeIn;
-}
-

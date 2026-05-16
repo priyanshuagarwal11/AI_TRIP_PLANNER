@@ -2,261 +2,240 @@ import { useState } from 'react';
 import { 
   MapPin, Download, Share2, Bookmark, Calendar, 
   BedDouble, Activity, CheckCircle2, Star,
-  Car, Coffee, CreditCard, LayoutDashboard
+  Car, Coffee, CreditCard, LayoutDashboard, Clock
 } from 'lucide-react';
 import type { TripData } from '../types';
+
+const TABS = [
+  { id: 'itinerary', icon: LayoutDashboard, label: 'Itinerary' },
+  { id: 'hotels', icon: BedDouble, label: 'Hotels' },
+  { id: 'activities', icon: Activity, label: 'Activities' },
+  { id: 'cost', icon: CreditCard, label: 'Budget' }
+] as const;
 
 export const TripResults = ({ tripData, onSave }: { tripData: TripData, onSave: (trip: TripData) => void }) => {
   const [activeTab, setActiveTab] = useState<'itinerary' | 'hotels' | 'activities' | 'cost'>('itinerary');
 
   return (
-    <div className="space-y-12">
-      {/* 1. Summary Header Section */}
-      <div className="flex flex-col md:flex-row justify-between gap-6 bg-white dark:bg-gray-800 p-8 rounded-[2rem] shadow-xl border border-gray-100 dark:border-gray-700 relative overflow-hidden group">
-        <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-blue-500/10 to-purple-500/10 rounded-full blur-3xl group-hover:scale-150 transition-transform duration-1000 -z-0"></div>
-        <div className="relative z-10 flex-col flex justify-center">
-          <div className="flex items-center gap-3 bg-blue-50 dark:bg-blue-900/40 w-fit px-4 py-2 rounded-full mb-4">
-            <span className="w-2 h-2 rounded-full bg-blue-600 dark:bg-blue-400 animate-pulse"></span>
-            <span className="text-sm font-bold text-blue-700 dark:text-blue-300">AI Plan Ready</span>
+    <div className="space-y-8">
+      {/* Header */}
+      <div className="card p-6 sm:p-8">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+          <div>
+            <div className="badge bg-green-50 dark:bg-green-950/40 text-green-600 dark:text-green-400 border border-green-200/60 dark:border-green-800/40 mb-3">
+              <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" /> AI Plan Ready
+            </div>
+            <h2 className="text-3xl sm:text-4xl font-extrabold text-gray-900 dark:text-white tracking-tight flex items-center gap-3">
+              <MapPin className="w-7 h-7 text-blue-600" /> {tripData.destination}
+            </h2>
+            <div className="flex flex-wrap items-center gap-3 mt-4">
+              <span className="badge bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-0">
+                <Calendar className="w-3.5 h-3.5" /> {tripData.days} Days
+              </span>
+              <span className="badge bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border-0">
+                <CreditCard className="w-3.5 h-3.5" /> Est. ₹{tripData.cost.total.toLocaleString()}
+              </span>
+            </div>
           </div>
-          <h2 className="text-4xl lg:text-5xl font-extrabold text-gray-900 dark:text-white flex items-center gap-3">
-            <MapPin className="text-purple-500 w-10 h-10" /> {tripData.destination}
-          </h2>
-          <div className="flex flex-wrap items-center gap-4 mt-6">
-            <span className="px-5 py-2.5 bg-gray-100 dark:bg-gray-900 shadow-inner rounded-xl font-bold flex items-center gap-2">
-              <Calendar className="w-5 h-5 text-gray-400" /> {tripData.days} Days
-            </span>
-            <span className="px-5 py-2.5 bg-gray-100 dark:bg-gray-900 shadow-inner rounded-xl font-bold text-green-600 dark:text-green-400 flex items-center gap-2">
-              <CreditCard className="w-5 h-5" /> Est. ${tripData.cost.total.toLocaleString()}
-            </span>
-          </div>
-        </div>
 
-        <div className="relative z-10 flex flex-col md:items-end justify-center gap-4 border-t md:border-t-0 md:border-l border-gray-200 dark:border-gray-700 pt-6 md:pt-0 md:pl-8">
-          <div className="grid grid-cols-2 lg:flex lg:flex-row gap-3 w-full">
-            <button className="flex items-center justify-center gap-2 px-5 py-4 lg:py-3 bg-gray-50 hover:bg-gray-100 dark:bg-gray-900 dark:hover:bg-gray-800 rounded-xl font-bold transition-colors shadow-sm text-gray-700 dark:text-gray-300">
-              <Share2 className="w-5 h-5" /> Share
+          <div className="flex flex-wrap gap-2">
+            <button className="btn-ghost text-sm border border-gray-200 dark:border-gray-700 rounded-xl">
+              <Share2 className="w-4 h-4" /> Share
             </button>
-            <button className="flex items-center justify-center gap-2 px-5 py-4 lg:py-3 bg-red-50 hover:bg-red-100 dark:bg-red-900/20 dark:hover:bg-red-900/40 rounded-xl font-bold transition-colors shadow-sm text-red-600 dark:text-red-400">
-              <Download className="w-5 h-5" /> PDF
+            <button className="btn-ghost text-sm border border-gray-200 dark:border-gray-700 rounded-xl">
+              <Download className="w-4 h-4" /> PDF
             </button>
-            <button 
-              onClick={() => onSave(tripData)}
-              className="flex items-center col-span-2 justify-center gap-2 px-6 py-4 lg:py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl font-extrabold transition-transform hover:-translate-y-1 shadow-xl shadow-blue-500/20 w-full"
-            >
-              <Bookmark className="w-5 h-5" /> Save Trip
+            <button onClick={() => onSave(tripData)} className="btn-primary text-sm">
+              <Bookmark className="w-4 h-4" /> Save Trip
             </button>
           </div>
         </div>
       </div>
 
-      {/* Main Tabs */}
-      <div className="flex overflow-x-auto no-scrollbar gap-2 md:gap-4 p-2 bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 sticky top-24 z-40">
-        {[ 
-          { id: 'itinerary', icon: LayoutDashboard, label: 'Itinerary' },
-          { id: 'hotels', icon: BedDouble, label: 'Hotels' },
-          { id: 'activities', icon: Activity, label: 'Activities' },
-          { id: 'cost', icon: CreditCard, label: 'Cost Breakdown' }
-        ].map(tab => (
+      {/* Tabs */}
+      <div className="flex gap-1 p-1 bg-gray-100 dark:bg-gray-800/50 rounded-xl sticky top-16 z-40 overflow-x-auto no-scrollbar">
+        {TABS.map(tab => (
           <button
             key={tab.id}
-            onClick={() => setActiveTab(tab.id as any)}
-            className={`flex-1 flex items-center justify-center min-w-[140px] gap-2 px-6 py-4 rounded-xl font-bold transition-all duration-300 ${
-              activeTab === tab.id 
-                ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 shadow-sm'
-                : 'text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white'
+            onClick={() => setActiveTab(tab.id)}
+            className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-semibold transition-all whitespace-nowrap ${
+              activeTab === tab.id
+                ? 'bg-white dark:bg-gray-900 text-gray-900 dark:text-white shadow-sm'
+                : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
             }`}
           >
-            <tab.icon className="w-5 h-5" /> {tab.label}
+            <tab.icon className="w-4 h-4" /> {tab.label}
           </button>
         ))}
       </div>
 
-      {/* Content Area */}
-      <div className="animate-in fade-in slide-in-from-bottom-8 duration-500">
-        
-        {/* ITINERARY TAB */}
+      {/* Content */}
+      <div className="animate-in fade-in duration-300">
+        {/* ITINERARY */}
         {activeTab === 'itinerary' && (
-          <div className="space-y-8">
-            <h3 className="text-3xl font-black mb-6 flex items-center gap-3">
-              <Calendar className="text-purple-500 w-8 h-8" /> Day-by-Day Plan
-            </h3>
-            <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-6">
-              {tripData.itinerary.map((dayPlan) => (
-                <div key={dayPlan.day} className="bg-white dark:bg-gray-800 rounded-3xl overflow-hidden shadow-lg border border-gray-100 dark:border-gray-700 flex flex-col group relative hover:-translate-y-1 transition-transform">
-                  <div className="absolute top-4 right-4 w-12 h-12 bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm rounded-2xl shadow-lg flex items-center justify-center font-black text-2xl text-blue-600 z-10">
-                    {dayPlan.day}
-                  </div>
-                  <div className="h-48 bg-gray-200 dark:bg-gray-700 overflow-hidden relative">
-                    {dayPlan.places[0]?.image ? (
-                      <img src={dayPlan.places[0].image} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" alt={dayPlan.title || 'Day highlight'} />
-                    ) : (
-                      <div className="w-full h-full bg-gradient-to-br from-indigo-400 to-purple-500"></div>
-                    )}
-                    <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-gray-900 to-transparent pt-12 p-6">
-                      <h4 className="text-xl font-bold text-white">
-                        {dayPlan.title || `Day ${dayPlan.day} Overview`}
-                      </h4>
-                      {dayPlan.subtitle && (
-                        <p className="text-sm text-gray-300 mt-1">{dayPlan.subtitle}</p>
-                      )}
+          <div className="space-y-6">
+            {tripData.itinerary.map((dayPlan) => (
+              <div key={dayPlan.day} className="card overflow-hidden">
+                {/* Day header with image */}
+                <div className="relative h-44 sm:h-52 overflow-hidden">
+                  {dayPlan.places[0]?.image ? (
+                    <img src={dayPlan.places[0].image} className="w-full h-full object-cover" alt={dayPlan.title || 'Day highlight'} />
+                  ) : (
+                    <div className="w-full h-full bg-gradient-to-br from-blue-500 to-indigo-600" />
+                  )}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
+                  <div className="absolute bottom-0 left-0 right-0 p-6 flex items-end justify-between">
+                    <div>
+                      <div className="badge bg-white/20 text-white backdrop-blur-sm text-xs mb-2">Day {dayPlan.day}</div>
+                      <h3 className="text-xl sm:text-2xl font-bold text-white">{dayPlan.title || `Day ${dayPlan.day}`}</h3>
+                      {dayPlan.subtitle && <p className="text-white/70 text-sm mt-1">{dayPlan.subtitle}</p>}
                     </div>
                   </div>
-                  
-                  <div className="p-6 flex-grow flex flex-col justify-center space-y-5">
-                    {dayPlan.places.map((place, i) => {
-                      const periodColors: Record<string, string> = {
-                        morning: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
-                        afternoon: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
-                        evening: 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400',
-                      };
-                      return (
-                        <div key={i} className="flex gap-4 group/item">
-                          <div className="flex flex-col items-center">
-                            <CheckCircle2 className="w-6 h-6 text-green-500 shrink-0 bg-white dark:bg-gray-800 rounded-full" />
-                            {i !== dayPlan.places.length - 1 && <div className="w-0.5 h-full bg-gray-200 dark:bg-gray-700 mt-2 rounded-full"></div>}
-                          </div>
-                          <div className="pb-4 flex-1">
-                            <div className="flex items-center gap-2 mb-1 flex-wrap">
-                              {place.time && (
-                                <span className="text-xs font-bold text-gray-400 dark:text-gray-500">{place.time}</span>
-                              )}
-                              {place.period && (
-                                <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ${periodColors[place.period] || ''}`}>
-                                  {place.period}
-                                </span>
-                              )}
-                            </div>
-                            <h5 className="font-bold text-gray-900 dark:text-white mb-1 group-hover/item:text-blue-500 transition-colors text-lg">{place.name}</h5>
-                            <p className="text-sm font-medium text-gray-500 dark:text-gray-400 leading-relaxed">{place.description}</p>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
                 </div>
-              ))}
-            </div>
+
+                {/* Places timeline */}
+                <div className="p-6 space-y-0">
+                  {dayPlan.places.map((place, i) => {
+                    const periodColors: Record<string, string> = {
+                      morning: 'text-amber-600 bg-amber-50 dark:bg-amber-950/30 dark:text-amber-400',
+                      afternoon: 'text-blue-600 bg-blue-50 dark:bg-blue-950/30 dark:text-blue-400',
+                      evening: 'text-purple-600 bg-purple-50 dark:bg-purple-950/30 dark:text-purple-400',
+                    };
+                    return (
+                      <div key={i} className="flex gap-4 group">
+                        {/* Timeline connector */}
+                        <div className="flex flex-col items-center pt-1">
+                          <div className="w-2.5 h-2.5 rounded-full bg-blue-600 ring-4 ring-blue-100 dark:ring-blue-950 shrink-0" />
+                          {i < dayPlan.places.length - 1 && <div className="w-px flex-1 bg-gray-200 dark:bg-gray-700 my-1" />}
+                        </div>
+                        {/* Content */}
+                        <div className="pb-6 flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-1 flex-wrap">
+                            {place.time && (
+                              <span className="text-xs font-semibold text-gray-400 flex items-center gap-1">
+                                <Clock className="w-3 h-3" /> {place.time}
+                              </span>
+                            )}
+                            {place.period && (
+                              <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ${periodColors[place.period] || ''}`}>
+                                {place.period}
+                              </span>
+                            )}
+                          </div>
+                          <h4 className="font-bold text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">{place.name}</h4>
+                          <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed mt-0.5">{place.description}</p>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
           </div>
         )}
 
         {/* HOTELS */}
         {activeTab === 'hotels' && (
-          <div className="space-y-6">
-            <h3 className="text-3xl font-black mb-6 flex items-center gap-3">
-              <BedDouble className="text-orange-500 w-8 h-8" /> Recommended Stays
-            </h3>
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {tripData.hotels.map((hotel, i) => (
-                <div key={i} className="bg-white dark:bg-gray-800 rounded-3xl overflow-hidden shadow-lg border border-gray-100 dark:border-gray-700 hover:shadow-xl transition-all group">
-                  <div className="h-48 bg-gray-200 dark:bg-gray-700 relative overflow-hidden">
-                    {hotel.image ? (
-                      <img src={hotel.image} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
-                    ) : (
-                      <div className="w-full h-full bg-gradient-to-br from-orange-400 to-red-500"></div>
-                    )}
-                    <div className="absolute top-4 right-4 bg-white/90 dark:bg-gray-900/90 backdrop-blur-md px-3 py-1.5 rounded-full shadow-lg flex items-center gap-1 font-bold text-gray-900 dark:text-white">
-                      <Star className="w-4 h-4 text-orange-500 fill-current" /> {hotel.rating}
-                    </div>
-                  </div>
-                  <div className="p-6">
-                    <h4 className="font-bold text-2xl text-gray-900 dark:text-white mb-2 line-clamp-1">{hotel.name}</h4>
-                    <p className="text-sm font-medium text-gray-500 dark:text-gray-400 flex items-center gap-2 mb-6">
-                      <MapPin className="w-4 h-4" /> Near city center
-                    </p>
-                    <div className="flex items-end justify-between border-t border-gray-100 dark:border-gray-700 pt-6">
-                      <div>
-                        <span className="text-3xl font-black text-green-600 dark:text-green-400">${Math.round(hotel.price / tripData.days)}</span>
-                        <span className="text-sm text-gray-500 dark:text-gray-400"> / night</span>
-                      </div>
-                      <div className="text-right">
-                        <p className="font-bold text-gray-900 dark:text-white">${hotel.price}</p>
-                        <p className="text-xs font-bold text-gray-400">TOTAL</p>
-                      </div>
-                    </div>
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
+            {tripData.hotels.map((hotel, i) => (
+              <div key={i} className="card overflow-hidden group">
+                <div className="h-44 bg-gray-100 dark:bg-gray-800 overflow-hidden relative">
+                  {hotel.image ? (
+                    <img src={hotel.image} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" alt={hotel.name} />
+                  ) : (
+                    <div className="w-full h-full bg-gradient-to-br from-amber-400 to-orange-500" />
+                  )}
+                  <div className="absolute top-3 right-3 badge bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm text-gray-900 dark:text-white border-0 shadow-sm">
+                    <Star className="w-3.5 h-3.5 text-amber-400 fill-current" /> {hotel.rating}
                   </div>
                 </div>
-              ))}
-            </div>
+                <div className="p-5">
+                  <h4 className="font-bold text-gray-900 dark:text-white mb-3 line-clamp-1">{hotel.name}</h4>
+                  <div className="flex items-end justify-between pt-3 border-t border-gray-100 dark:border-gray-800">
+                    <div>
+                      <span className="text-2xl font-extrabold text-gray-900 dark:text-white">₹{Math.round(hotel.price / tripData.days).toLocaleString()}</span>
+                      <span className="text-xs text-gray-500 ml-1">/ night</span>
+                    </div>
+                    <span className="text-sm font-semibold text-gray-400">₹{hotel.price.toLocaleString()} total</span>
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
         )}
 
         {/* ACTIVITIES */}
         {activeTab === 'activities' && (
-          <div className="space-y-6">
-            <h3 className="text-3xl font-black mb-6 flex items-center gap-3">
-              <Activity className="text-pink-500 w-8 h-8" /> Top Activities Matches
-            </h3>
-            <div className="grid md:grid-cols-2 gap-6">
-              {tripData.activities.map((activity, i) => (
-                <div key={i} className="flex gap-6 bg-white dark:bg-gray-800 p-6 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700 hover:-translate-y-1 transition-transform group">
-                  <div className="hidden sm:flex items-center justify-center w-20 h-20 bg-pink-50 dark:bg-pink-900/20 text-pink-500 rounded-2xl shrink-0 group-hover:scale-110 transition-transform">
-                    <Activity className="w-10 h-10" />
-                  </div>
-                  <div>
-                    <span className="px-3 py-1 rounded-full bg-gray-100 dark:bg-gray-900 text-xs font-bold text-gray-500 dark:text-gray-400 mb-3 inline-block uppercase tracking-wider">
-                      {activity.type}
-                    </span>
-                    <h4 className="font-extrabold text-2xl text-gray-900 dark:text-white mb-2">{activity.name}</h4>
-                    <p className="text-lg text-gray-600 dark:text-gray-400 font-medium leading-relaxed">{activity.description}</p>
-                  </div>
+          <div className="grid md:grid-cols-2 gap-4">
+            {tripData.activities.map((activity, i) => (
+              <div key={i} className="card p-5 flex gap-4 hover:-translate-y-0.5 transition-all duration-200">
+                <div className="w-12 h-12 rounded-xl bg-purple-50 dark:bg-purple-950/30 text-purple-500 flex items-center justify-center shrink-0">
+                  <Activity className="w-5 h-5" />
                 </div>
-              ))}
-            </div>
+                <div className="min-w-0">
+                  <span className="badge bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 border-0 text-[10px] mb-2">
+                    {activity.type}
+                  </span>
+                  <h4 className="font-bold text-gray-900 dark:text-white mb-1">{activity.name}</h4>
+                  <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed line-clamp-2">{activity.description}</p>
+                </div>
+              </div>
+            ))}
           </div>
         )}
 
         {/* COST */}
         {activeTab === 'cost' && (
-          <div className="space-y-8">
-            <h3 className="text-3xl font-black mb-6 flex items-center gap-3">
-              <CreditCard className="text-green-500 w-8 h-8" /> Budget Breakdown
-            </h3>
-            
-            <div className="grid lg:grid-cols-3 gap-8">
-              <div className="lg:col-span-1 bg-gradient-to-br from-green-500 to-emerald-600 rounded-3xl p-8 text-white shadow-xl shadow-green-500/20 flex flex-col justify-center items-center text-center">
-                <p className="text-green-100 text-lg font-bold mb-2 uppercase tracking-wide">Total Estimated Cost</p>
-                <div className="text-6xl font-black tracking-tighter mb-4">${tripData.cost.total.toLocaleString()}</div>
-                <p className="bg-white/20 px-4 py-2 rounded-xl font-medium backdrop-blur-sm">
-                  Budget limit was ${tripData.budget.toLocaleString()}
-                </p>
-              </div>
-
-              <div className="lg:col-span-2 grid sm:grid-cols-3 gap-4">
-                <div className="bg-white dark:bg-gray-800 p-8 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700 flex flex-col items-center text-center justify-center gap-4 hover:-translate-y-1 transition-transform">
-                  <div className="w-16 h-16 bg-orange-50 dark:bg-orange-900/30 text-orange-500 rounded-2xl flex items-center justify-center mb-2">
-                    <BedDouble className="w-8 h-8" />
+          <div className="space-y-6">
+            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              {[
+                { label: 'Total Cost', value: tripData.cost.total, icon: CreditCard, color: 'text-blue-600 bg-blue-50 dark:bg-blue-950/30' },
+                { label: 'Accommodation', value: tripData.cost.hotel, icon: BedDouble, color: 'text-amber-500 bg-amber-50 dark:bg-amber-950/30' },
+                { label: 'Transport', value: tripData.cost.travel, icon: Car, color: 'text-blue-500 bg-blue-50 dark:bg-blue-950/30' },
+                { label: 'Food & Leisure', value: tripData.cost.food, icon: Coffee, color: 'text-emerald-500 bg-emerald-50 dark:bg-emerald-950/30' },
+              ].map((c, i) => (
+                <div key={i} className="card p-5 text-center hover:-translate-y-0.5 transition-all">
+                  <div className={`w-11 h-11 rounded-xl ${c.color} flex items-center justify-center mx-auto mb-3`}>
+                    <c.icon className="w-5 h-5" />
                   </div>
-                  <div>
-                    <h4 className="font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest text-xs mb-1">Accommodation</h4>
-                    <div className="text-3xl font-black text-gray-900 dark:text-white">${tripData.cost.hotel.toLocaleString()}</div>
-                  </div>
+                  <div className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">{c.label}</div>
+                  <div className="text-2xl font-extrabold text-gray-900 dark:text-white">₹{c.value.toLocaleString()}</div>
                 </div>
-
-                <div className="bg-white dark:bg-gray-800 p-8 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700 flex flex-col items-center text-center justify-center gap-4 hover:-translate-y-1 transition-transform">
-                  <div className="w-16 h-16 bg-blue-50 dark:bg-blue-900/30 text-blue-500 rounded-2xl flex items-center justify-center mb-2">
-                    <Car className="w-8 h-8" />
-                  </div>
-                  <div>
-                    <h4 className="font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest text-xs mb-1">Travel & Trans.</h4>
-                    <div className="text-3xl font-black text-gray-900 dark:text-white">${tripData.cost.travel.toLocaleString()}</div>
-                  </div>
-                </div>
-
-                <div className="bg-white dark:bg-gray-800 p-8 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700 flex flex-col items-center text-center justify-center gap-4 hover:-translate-y-1 transition-transform">
-                  <div className="w-16 h-16 bg-yellow-50 dark:bg-yellow-900/30 text-yellow-500 rounded-2xl flex items-center justify-center mb-2">
-                    <Coffee className="w-8 h-8" />
-                  </div>
-                  <div>
-                    <h4 className="font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest text-xs mb-1">Food & Leisure</h4>
-                    <div className="text-3xl font-black text-gray-900 dark:text-white">${tripData.cost.food.toLocaleString()}</div>
-                  </div>
-                </div>
-              </div>
+              ))}
             </div>
-            
-            <div className="bg-blue-50 dark:bg-blue-900/20 p-6 rounded-2xl mt-8 border border-blue-100 dark:border-blue-900 font-medium text-blue-800 dark:text-blue-200">
-              💡 <strong>Pro Tip:</strong> This breakdown is dynamically curated based on your selected interests. Allocations adjust heavier on food, adventure, or standard depending on what you picked!
+
+            {/* Budget bar */}
+            <div className="card p-5">
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-sm font-semibold text-gray-900 dark:text-white">Budget Usage</span>
+                <span className="text-sm font-semibold text-gray-500">
+                  ₹{tripData.cost.total.toLocaleString()} / ₹{tripData.budget.toLocaleString()}
+                </span>
+              </div>
+              <div className="h-3 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
+                <div
+                  className={`h-full rounded-full transition-all duration-1000 ${
+                    tripData.cost.total > tripData.budget
+                      ? 'bg-red-500'
+                      : tripData.cost.total > tripData.budget * 0.8
+                        ? 'bg-amber-500'
+                        : 'bg-emerald-500'
+                  }`}
+                  style={{ width: `${Math.min(100, (tripData.cost.total / tripData.budget) * 100)}%` }}
+                />
+              </div>
+              <p className="text-xs text-gray-400 mt-2">
+                {tripData.cost.total <= tripData.budget
+                  ? `✅ Under budget by ₹${(tripData.budget - tripData.cost.total).toLocaleString()}`
+                  : `⚠️ Over budget by ₹${(tripData.cost.total - tripData.budget).toLocaleString()}`
+                }
+              </p>
+            </div>
+
+            <div className="card p-5 border-blue-100 dark:border-blue-900/40 bg-blue-50/50 dark:bg-blue-950/20">
+              <p className="text-sm text-blue-800 dark:text-blue-200">
+                💡 <strong>Tip:</strong> This breakdown adjusts based on your selected interests. Food-lovers get higher dining allocations, adventure-seekers get more activity budget.
+              </p>
             </div>
           </div>
         )}
