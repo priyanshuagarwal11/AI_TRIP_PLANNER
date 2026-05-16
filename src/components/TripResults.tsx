@@ -1,9 +1,11 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { 
   MapPin, Download, Share2, Bookmark, Calendar, 
   BedDouble, Activity, CheckCircle2, Star,
-  Car, Coffee, CreditCard, LayoutDashboard, Clock
+  Car, Coffee, CreditCard, LayoutDashboard, Clock, CloudSun
 } from 'lucide-react';
+// @ts-ignore
+import html2pdf from 'html2pdf.js';
 import type { TripData } from '../types';
 
 const TABS = [
@@ -15,9 +17,52 @@ const TABS = [
 
 export const TripResults = ({ tripData, onSave }: { tripData: TripData, onSave: (trip: TripData) => void }) => {
   const [activeTab, setActiveTab] = useState<'itinerary' | 'hotels' | 'activities' | 'cost'>('itinerary');
+  const [weather, setWeather] = useState<{temp: number, desc: string} | null>(null);
+
+  useEffect(() => {
+    const fetchWeather = async () => {
+      try {
+        const geoRes = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(tripData.destination)}&count=1`);
+        const geoData = await geoRes.json();
+        if (geoData.results && geoData.results.length > 0) {
+          const { latitude, longitude } = geoData.results[0];
+          const weatherRes = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current_weather=true`);
+          const weatherData = await weatherRes.json();
+          if (weatherData.current_weather) {
+            setWeather({
+              temp: weatherData.current_weather.temperature,
+              desc: weatherData.current_weather.weathercode <= 3 ? 'Clear' : 'Cloudy/Rain'
+            });
+          }
+        }
+      } catch (err) {
+        console.error("Failed to fetch weather", err);
+      }
+    };
+    if (tripData.destination) fetchWeather();
+  }, [tripData.destination]);
+
+  const downloadPDF = () => {
+    const element = document.getElementById('trip-content');
+    if (!element) return;
+    const opt = {
+      margin:       0.3,
+      filename:     `${tripData.destination}_Itinerary.pdf`,
+      image:        { type: 'jpeg', quality: 0.98 },
+      html2canvas:  { scale: 2, useCORS: true },
+      jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
+    };
+    html2pdf().set(opt).from(element).save();
+  };
+
+  const shareOnWhatsApp = () => {
+    const text = `🗺️ *My Trip to ${tripData.destination}*\n⏳ *Duration:* ${tripData.days} Days\n💰 *Budget:* ₹${tripData.cost.total.toLocaleString()}\n\nPlanned via *TripGenie AI*!`;
+    const url = `https://wa.me/?text=${encodeURIComponent(text)}`;
+    window.open(url, '_blank');
+  };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8" id="trip-content">
       {/* Header */}
       <div className="card p-6 sm:p-8">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
@@ -32,17 +77,27 @@ export const TripResults = ({ tripData, onSave }: { tripData: TripData, onSave: 
               <span className="badge bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-0">
                 <Calendar className="w-3.5 h-3.5" /> {tripData.days} Days
               </span>
+              {tripData.startDate && (
+                <span className="badge bg-indigo-50 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-400 border-0">
+                  <Calendar className="w-3.5 h-3.5" /> {new Date(tripData.startDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                </span>
+              )}
               <span className="badge bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border-0">
                 <CreditCard className="w-3.5 h-3.5" /> Est. ₹{tripData.cost.total.toLocaleString()}
               </span>
+              {weather && (
+                <span className="badge bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400 border-0">
+                  <CloudSun className="w-3.5 h-3.5" /> {weather.temp}°C ({weather.desc})
+                </span>
+              )}
             </div>
           </div>
 
-          <div className="flex flex-wrap gap-2">
-            <button className="btn-ghost text-sm border border-gray-200 dark:border-gray-700 rounded-xl">
+          <div className="flex flex-wrap gap-2" data-html2canvas-ignore="true">
+            <button onClick={shareOnWhatsApp} className="btn-ghost text-sm border border-gray-200 dark:border-gray-700 rounded-xl hover:text-green-600 dark:hover:text-green-400 hover:border-green-500 transition-colors">
               <Share2 className="w-4 h-4" /> Share
             </button>
-            <button className="btn-ghost text-sm border border-gray-200 dark:border-gray-700 rounded-xl">
+            <button onClick={downloadPDF} className="btn-ghost text-sm border border-gray-200 dark:border-gray-700 rounded-xl hover:text-red-500 dark:hover:text-red-400 hover:border-red-500 transition-colors">
               <Download className="w-4 h-4" /> PDF
             </button>
             <button onClick={() => onSave(tripData)} className="btn-primary text-sm">
@@ -107,6 +162,16 @@ export const TripResults = ({ tripData, onSave }: { tripData: TripData, onSave: 
                         <div className="flex flex-col items-center pt-1">
                           <div className="w-2.5 h-2.5 rounded-full bg-blue-600 ring-4 ring-blue-100 dark:ring-blue-950 shrink-0" />
                           {i < dayPlan.places.length - 1 && <div className="w-px flex-1 bg-gray-200 dark:bg-gray-700 my-1" />}
+                        </div>
+                        {/* Image */}
+                        <div className="w-20 h-20 sm:w-28 sm:h-28 rounded-xl bg-gray-100 dark:bg-gray-800 shrink-0 overflow-hidden shadow-sm">
+                          {place.image ? (
+                            <img src={place.image} alt={place.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center">
+                              <MapPin className="w-8 h-8 text-gray-300 dark:text-gray-600" />
+                            </div>
+                          )}
                         </div>
                         {/* Content */}
                         <div className="pb-6 flex-1 min-w-0">

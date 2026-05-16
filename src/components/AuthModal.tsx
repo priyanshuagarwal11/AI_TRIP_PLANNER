@@ -78,7 +78,7 @@ export const AuthModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () =>
 
           <div className="text-center mb-8">
             <h2 className="text-2xl font-extrabold text-gray-900 dark:text-white mb-1">
-              {isLogin ? 'Welcome back' : 'Create account'}
+              {isLogin ? 'Welcome' : 'Create account'}
             </h2>
             <p className="text-sm text-gray-500 dark:text-gray-400">
               {isLogin ? 'Enter your details to access your trips' : 'Join TripGenie to explore the world'}

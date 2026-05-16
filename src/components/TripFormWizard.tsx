@@ -9,12 +9,13 @@ const interestsOptions = [
 ];
 
 interface WizardProps {
-  onSubmit: (data: { destination: string; budget: number; days: number; travelers: number; interests: string[] }) => void;
+  onSubmit: (data: { destination: string; startDate: string; budget: number; days: number; travelers: number; interests: string[] }) => void;
 }
 
 export const TripFormWizard: React.FC<WizardProps> = ({ onSubmit }) => {
   const [step, setStep] = useState(1);
   const [destination, setDestination] = useState('');
+  const [startDate, setStartDate] = useState('');
   const [days, setDays] = useState('');
   const [travelers, setTravelers] = useState('2');
   const [budget, setBudget] = useState('');
@@ -22,7 +23,7 @@ export const TripFormWizard: React.FC<WizardProps> = ({ onSubmit }) => {
   const [error, setError] = useState('');
 
   const nextStep = () => {
-    if (step === 1 && (!destination.trim() || !days || !travelers)) {
+    if (step === 1 && (!destination.trim() || !startDate || !days || !travelers)) {
       setError('Please fill in all details to continue.');
       return;
     }
@@ -46,7 +47,7 @@ export const TripFormWizard: React.FC<WizardProps> = ({ onSubmit }) => {
       return;
     }
     setError('');
-    onSubmit({ destination, budget: Number(budget), days: Number(days), travelers: Number(travelers), interests });
+    onSubmit({ destination, startDate, budget: Number(budget), days: Number(days), travelers: Number(travelers), interests });
   };
 
   return (
@@ -95,6 +96,18 @@ export const TripFormWizard: React.FC<WizardProps> = ({ onSubmit }) => {
                   onChange={setDestination}
                   autoFocus
                 />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-gray-900 dark:text-white mb-2">Start Date</label>
+                <div className="relative">
+                  <CalendarDays className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                  <input 
+                    type="date"
+                    min={new Date().toISOString().split('T')[0]}
+                    value={startDate} onChange={(e) => setStartDate(e.target.value)}
+                    className="w-full bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-xl pl-10 pr-4 py-3 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all text-sm text-gray-900 dark:text-white placeholder:text-gray-400"
+                  />
+                </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>

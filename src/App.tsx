@@ -15,7 +15,7 @@ import { UserDashboard } from './components/dashboard/UserDashboard';
 import { AdminDashboard } from './components/dashboard/AdminDashboard';
 import type { TripData } from './types';
 import { getDestinationData } from './data/destinations';
-import { logActivity } from './lib/firestore';
+import { logActivity, storeGlobalTrip } from './lib/firestore';
 
 type ViewState = 'home' | 'plan' | 'loading' | 'results' | 'saved' | 'groups' | 'ai-planner' | 'dashboard' | 'admin';
 
@@ -144,6 +144,7 @@ function AppContent() {
       destination: formData.destination,
       days: formData.days,
       budget: formData.budget,
+      startDate: formData.startDate,
       dateSaved: new Date().toLocaleDateString(),
       itinerary: destData.days.map((dayData, i) => ({
         day: i + 1,
@@ -182,9 +183,15 @@ function AppContent() {
     setActiveView('loading');
     window.scrollTo({ top: 0, behavior: 'smooth' });
     if (currentUser) logActivity(currentUser.uid, 'trip_generated', { destination: formData.destination });
-    setTimeout(() => {
+    setTimeout(async () => {
       const generated = generateMockTrip(formData);
       setCurrentTrip(generated);
+      
+      // Store globally for Admin Dashboard
+      if (currentUser) {
+        await storeGlobalTrip(currentUser, generated);
+      }
+
       // Auto-save to trip history
       setTripHistory(prev => {
         const updated = [generated, ...prev].slice(0, 50); // keep last 50

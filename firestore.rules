@@ -1,0 +1,62 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Function to check if user is logged in
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // Function to check if user is an admin
+    // Note: We check the user's role field in the users collection.
+    // To prevent infinite recursion, use get()
+    function isAdmin() {
+      return isAuthenticated() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    // USERS COLLECTION
+    match /users/{userId} {
+      // Users can read/write their own profile
+      // Admins can read/write any profile
+      allow read: if isAuthenticated() && (request.auth.uid == userId || isAdmin());
+      
+      // Allow users to create their initial profile document
+      // Prevent users from setting their own role to 'admin' unless they are already an admin
+      allow create: if isAuthenticated() && request.auth.uid == userId 
+                    && (request.resource.data.role == 'user' || isAdmin());
+                    
+      // Allow users to update their profile but NOT their role
+      allow update: if isAuthenticated() && (
+        (request.auth.uid == userId && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['displayName', 'photoURL', 'lastLogin']))
+        || isAdmin()
+      );
+
+      // Only admins can delete users
+      allow delete: if isAdmin();
+
+      // NESTED TRIPS (Saved trips inside user doc)
+      match /trips/{tripId} {
+        allow read, write: if isAuthenticated() && (request.auth.uid == userId || isAdmin());
+      }
+    }
+
+    // GLOBAL TRIPS COLLECTION
+    match /trips/{tripId} {
+      // Any authenticated user can create a global trip log
+      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+      
+      // Only admins can read the global trips collection
+      allow read, update, delete: if isAdmin();
+    }
+
+    // ACTIVITY LOGS COLLECTION
+    match /activities/{activityId} {
+      // Any authenticated user can log their own activity
+      allow create: if isAuthenticated() && request.resource.data.uid == request.auth.uid;
+      
+      // Only admins can read or delete activity logs
+      allow read, update, delete: if isAdmin();
+    }
+  }
+}

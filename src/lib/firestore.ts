@@ -71,13 +71,55 @@ export async function saveTripToDB(userId: string, tripData: AITripData) {
   }
 }
 
+// ─── Store Global Trip ───
+export async function storeGlobalTrip(user: User, tripData: any) {
+  try {
+    await addDoc(collection(db, 'trips'), {
+      userId: user.uid,
+      userEmail: user.email,
+      userName: user.displayName || 'Traveler',
+      destination: tripData.destination,
+      days: tripData.days,
+      budget: tripData.budget,
+      travelers: tripData.travelers || 2, // Default or pass from formData
+      itinerary: tripData.itinerary,
+      cost: tripData.cost,
+      createdAt: serverTimestamp(),
+    });
+  } catch (error) {
+    console.error("Error storing global trip:", error);
+  }
+}
+
+// ─── Get All Global Trips (Admin) ───
+export async function getAllGlobalTrips(limitCount = 100) {
+  try {
+    const q = query(collection(db, 'trips'), orderBy('createdAt', 'desc'), limit(limitCount));
+    const snap = await getDocs(q);
+    return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  } catch (error) {
+    console.error("Error fetching global trips:", error);
+    return [];
+  }
+}
+
 // ─── Activity Logging ───
 export async function logActivity(uid: string, action: string, meta?: Record<string, any>) {
   try {
+    const deviceInfo = {
+      userAgent: navigator.userAgent,
+      language: navigator.language,
+      platform: navigator.platform || 'Unknown',
+      screenResolution: `${window.innerWidth}x${window.innerHeight}`
+    };
+
     await addDoc(collection(db, 'activities'), {
       uid,
       action,
-      meta: meta || {},
+      meta: {
+        ...meta,
+        deviceInfo
+      },
       timestamp: serverTimestamp(),
     });
   } catch (error) {

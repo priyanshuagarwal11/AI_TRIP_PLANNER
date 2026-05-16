@@ -40,6 +40,7 @@ export interface TripData {
   destination: string;
   days: number;
   budget: number;
+  startDate?: string;
   itinerary: DayPlan[];
   cost: CostBreakdown;
   hotels: Hotel[];
