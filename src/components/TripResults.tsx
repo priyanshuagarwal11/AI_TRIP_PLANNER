@@ -52,6 +52,7 @@ export const TripResults = ({ tripData, onSave }: { tripData: TripData, onSave: 
       html2canvas:  { scale: 2, useCORS: true },
       jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
     };
+    // @ts-ignore
     html2pdf().set(opt).from(element).save();
   };
 

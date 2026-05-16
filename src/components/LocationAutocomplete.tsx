@@ -105,8 +105,8 @@ export const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
 
   const containerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
-  const debounceRef = useRef<ReturnType<typeof setTimeout>>();
-  const abortRef = useRef<AbortController>();
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const abortRef = useRef<AbortController | null>(null);
 
   // Sync external value
   useEffect(() => { setQuery(value); }, [value]);
@@ -162,7 +162,9 @@ export const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
     setShowRecent(false);
 
     // Debounce API call
-    clearTimeout(debounceRef.current);
+    if (debounceRef.current) {
+      clearTimeout(debounceRef.current);
+    }
     if (val.trim().length >= 2) {
       setLoading(true);
       debounceRef.current = setTimeout(() => fetchSuggestions(val), DEBOUNCE_MS);

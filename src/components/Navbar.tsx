@@ -22,10 +22,10 @@ export const Navbar: React.FC<NavbarProps> = ({ darkMode, toggleDarkMode, active
   const { currentUser, logout, isAdmin } = useAuth();
 
   // Build nav items dynamically based on auth/role
-  const NAV_ITEMS = [
+  const NAV_ITEMS: Array<{ id: string; label: string; icon?: React.ElementType }> = [
     ...BASE_NAV,
-    ...(currentUser ? [{ id: 'dashboard' as const, label: 'Dashboard', icon: LayoutDashboard }] : []),
-    ...(isAdmin ? [{ id: 'admin' as const, label: 'Admin', icon: Shield }] : []),
+    ...(currentUser ? [{ id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard }] : []),
+    ...(isAdmin ? [{ id: 'admin', label: 'Admin', icon: Shield }] : []),
   ];
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);

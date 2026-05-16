@@ -26,9 +26,9 @@ export const ChatTab: React.FC<Props> = ({ group, currentUserId, currentUserName
     // Detect mentions
     const mentionRegex = /@(\w+)/g;
     const mentions: string[] = [];
-    let match;
+    let match: RegExpExecArray | null;
     while ((match = mentionRegex.exec(text)) !== null) {
-      const member = group.members.find(m => m.name.toLowerCase().includes(match[1].toLowerCase()));
+      const member = group.members.find(m => m.name.toLowerCase().includes(match![1].toLowerCase()));
       if (member) mentions.push(member.uid);
     }
 
